@@ -12,10 +12,10 @@ with open("README.rst", "r") as fh:
 setuptools.setup(
     name="frida-gadget",
     python_requires='>=3.7',
-    version="0.0.1",
+    version="0.0.2",
     author="ksg97031",
     author_email="ksg97031@gmail.com",
-    description="Sign the apk file",
+    description="Easy to use frida gadget",
     install_requires=['click', 'pathlib', 'frida==12.6.10', 'androguard'],
     long_description=long_description,
     long_description_content_type="text/x-rst",
