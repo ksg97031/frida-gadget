@@ -80,13 +80,15 @@ def run(apk_path: str, arch: str):
         android_manifest.write_text(txt)
 
         # Read main activity smali code
+        target_smali = None
         for smali_dir in decompiled_path.glob("smali*/"):
             target_smali = smali_dir.joinpath(*main_activity)
-            break
+            if target_smali.exists():
+                break
 
-        if not target_smali.exists():
+        if not target_smali or not target_smali.exists():
             raise Exception("Not Found, target class file: " +
-                            ".".join(main_activity))
+                                ".".join(main_activity))
         text = target_smali.read_text().split("\n")
 
         # Find onCreate method and inject loadLibary code for frida gadget
