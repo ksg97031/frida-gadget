@@ -77,8 +77,10 @@ def run(apk_path: str, arch: str):
         android_manifest.write_text(txt[:pos] + permissions_txt + txt[pos:])
 
         # Read main activity smali code
-        target_smali = decompiled_path.joinpath("smali").joinpath(
-            *main_activity)
+        for smali_dir in decompiled_path.glob("smali*/"):
+            target_smali = smali_dir.joinpath(*main_activity)
+            break
+
         if not target_smali.exists():
             raise Exception("Not Found, target class file: " +
                             ".".join(main_activity))
