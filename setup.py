@@ -1,9 +1,9 @@
 import sys
 import setuptools
 
-if sys.version_info < (3, 7):
+if sys.version_info < (3, 5, 3):
     print("Unfortunately, your python version is not supported!\n"
-          + "Please upgrade at least to Python 3.7!")
+          + "Please upgrade at least to Python 3.5.3!")
     sys.exit(1)
 
 with open("README.rst", "r") as fh:
@@ -11,12 +11,12 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="frida-gadget",
-    python_requires='>=3.7',
-    version="0.0.2",
+    python_requires='>=3.5.3',
+    version="0.0.4",
     author="ksg97031",
     author_email="ksg97031@gmail.com",
     description="Easy to use frida gadget",
-    install_requires=['click', 'pathlib', 'frida==12.6.10', 'androguard'],
+    install_requires=['click', 'frida==12.6.10', 'androguard'],
     long_description=long_description,
     long_description_content_type="text/x-rst",
     url="https://github.com/ksg97031/frida-gadget",
@@ -26,6 +26,9 @@ setuptools.setup(
             'frida-gadget = scripts.cli:run'
         ],
     },
+    package_data={'scripts':
+             ["files/libfrida-gadget-12.6.10-android-arm.so", "files/libfrida-gadget-12.6.10-android-arm64.so"]},
+    include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

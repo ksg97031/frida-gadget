@@ -12,6 +12,7 @@ from pathlib import Path
 p = Path(__file__)
 ROOT_DIR = p.parent.resolve()
 TEMP_DIR = ROOT_DIR.joinpath('temp')
+FILE_DIR = ROOT_DIR.joinpath('files')
 
 binaries = ['apktool']
 for binary in binaries:
@@ -23,9 +24,9 @@ for binary in binaries:
 
 def run_apktool(option, apk_path: str):
     if isinstance(option, list):
-        cmd = [config.apktool] + option + [apk_path]
+        cmd = [apktool] + option + [apk_path]
     else:
-        cmd = [config.apktool, option, apk_path]
+        cmd = [apktool, option, apk_path]
     try:
         output = check_output(cmd)
     except:
@@ -41,11 +42,13 @@ def run(apk_path: str, arch: str):
     apk = APK(apk_path)
     apk_path = Path(apk_path)
 
-    gadget_so_paths = {'arm':'files/libfrida-gadget-12.6.10-android-arm.so', 'arm64':'files/libfrida-gadget-12.6.10-android-arm64.so'}
+    gadget_so_paths = {'arm':'libfrida-gadget-12.6.10-android-arm.so', 'arm64':'libfrida-gadget-12.6.10-android-arm64.so'}
     if arch not in gadget_so_paths:
         raise Exception("Can't find the target arch: " + arch)
 
-    p_gadget_so = Path(gadget_so_paths[arch])
+    p_gadget_so = FILE_DIR.joinpath(gadget_so_paths[arch])
+    if not p_gadget_so.exists():
+        raise Exception("Can't find the target so file: " + str(p_gadget_so.resolve()))
 
     # Set main activity
     main_activity = apk.get_main_activity()
@@ -53,7 +56,7 @@ def run(apk_path: str, arch: str):
     main_activity[-1] += '.smali'
 
     # APK decompile with apktool
-    decompiled_path = config.TEMP_DIR.joinpath(str(apk_path.resolve())[:-4])
+    decompiled_path = TEMP_DIR.joinpath(str(apk_path.resolve())[:-4])
     if decompiled_path.exists():
         shutil.rmtree(decompiled_path)
 
