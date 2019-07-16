@@ -69,12 +69,15 @@ def run(apk_path: str, arch: str):
         android_manifest = decompiled_path.joinpath("AndroidManifest.xml")
         txt = android_manifest.read_text()
         pos = txt.index('</manifest>')
-        permissions = [
-            'android.permission.INTERNET',
-        ]
-        permissions_txt = "\n".join(
-            ["<uses-permission android:name='%s'/>" % x for x in permissions])
-        android_manifest.write_text(txt[:pos] + permissions_txt + txt[pos:])
+        permission = 'android.permission.INTERNET'
+
+        if permission not in txt:
+            permissions_txt = "<uses-permission android:name='%s'/>" % permission
+            txt = txt[:pos] + permissions_txt + txt[pos:]
+
+        if ':extractNativeLibs="false"' in txt:
+            txt = txt.replace(':extractNativeLibs="false"', ':extractNativeLibs="true"')
+        android_manifest.write_text(txt)
 
         # Read main activity smali code
         for smali_dir in decompiled_path.glob("smali*/"):
