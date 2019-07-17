@@ -11,8 +11,10 @@ frida-gadget
 .. code:: sh
 
   $ pip install frida-gadget 
+
   $ frida-gadget [apk_path] --arch=[arch, default arm]
   > [SOMETHING DUMMY PRINT]
   > Gadget APK: [gadget_apk_path]
+
   $ adb install [gadget_apk_path]
 
