@@ -12,7 +12,7 @@ with open("README.rst", "r") as fh:
 setuptools.setup(
     name="frida-gadget",
     python_requires='>=3.5.3',
-    version="0.0.9",
+    version="0.1.1",
     author="ksg97031",
     author_email="ksg97031@gmail.com",
     description="Easy to use frida gadget",
@@ -21,14 +21,13 @@ setuptools.setup(
     long_description_content_type="text/x-rst",
     url="https://github.com/ksg97031/frida-gadget",
     packages=setuptools.find_packages(),
+    package_data={'scripts':
+             ["files/libfrida-gadget-12.6.10-android-arm.so", "files/libfrida-gadget-12.6.10-android-arm64.so"]},
     entry_points={
         'console_scripts': [
             'frida-gadget = scripts.cli:run'
         ],
     },
-    package_data={'scripts':
-             ["files/libfrida-gadget-12.6.10-android-arm.so", "files/libfrida-gadget-12.6.10-android-arm64.so"]},
-    include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
