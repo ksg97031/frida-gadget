@@ -89,7 +89,9 @@ def run(apk_path: str, arch: str):
         if not target_smali or not target_smali.exists():
             raise Exception("Not Found, target class file: " +
                                 ".".join(main_activity))
-        text = target_smali.read_text().split("\n")
+        text = target_smali.read_text()
+        text = text.replace("invoke-virtual {v0, v1}, Ljava/lang/Runtime;->exit(I)V", "")
+        text = text.split("\n")
 
         # Find onCreate method and inject loadLibary code for frida gadget
         idx = 0
