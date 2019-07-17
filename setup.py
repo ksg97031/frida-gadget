@@ -12,7 +12,7 @@ with open("README.rst", "r") as fh:
 setuptools.setup(
     name="frida-gadget",
     python_requires='>=3.5.3',
-    version="0.1.1",
+    version="0.1.5",
     author="ksg97031",
     author_email="ksg97031@gmail.com",
     description="Easy to use frida gadget",
