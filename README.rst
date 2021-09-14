@@ -10,7 +10,7 @@ frida-gadget
 Installation
 ------------
 
-|Py-Versions| |PyPI-Downloads| |Libraries-Dependents|
+|Py-Versions| |Frida-Version| |PyPI-Downloads| |Libraries-Dependents|
 
 .. code:: sh
 
@@ -104,6 +104,8 @@ Similar Projects
    :target: https://libraries.io/pypi/frida-gadget
 .. |Libraries-Dependents| image:: https://img.shields.io/librariesio/dependent-repos/pypi/frida-gadget.svg?logo=koding&logoColor=white
     :target: https://github.com/ksg97031/frida-gadget/network/dependents
+.. |Frida-Version| image:: https://img.shields.io/badge/frida-15.1.1-blueviolet
+    :target: https://github.com/frida/frida/releases/tag/15.1.1
 .. |OpenHub-Status| image:: https://www.openhub.net/p/frida-gadget/widgets/project_thin_badge?format=gif
    :target: https://www.openhub.net/p/frida-gadget?ref=Thin+badge
 .. |awesome-python| image:: https://awesome.re/mentioned-badge.svg
