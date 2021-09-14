@@ -55,7 +55,8 @@ Example
       
     $ unzip -l /Users/ksg/demo/dist/handtrackinggpu.apk | grep libfrida-gadget
        21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-15.1.1-android-arm64.so 
-    
+       
+| [ loadLibrary code was injected ]
 .. image:: https://github.com/ksg97031/frida-gadget/blob/patch-frida-15.1.1/images/decompile.png
    :width: 600
    
