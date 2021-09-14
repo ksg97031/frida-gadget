@@ -5,3 +5,4 @@ androguard
 tqdm
 apk-signer
 pytest
+colorlog
