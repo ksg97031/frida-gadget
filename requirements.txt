@@ -2,3 +2,6 @@ frida==12.6.10
 click
 pathlib
 androguard
+tqdm
+apk-signer
+pytest
