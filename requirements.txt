@@ -1,4 +1,7 @@
-frida==12.6.10
+frida==15.1.1
 click
 pathlib
 androguard
+tqdm
+apk-signer
+pytest
