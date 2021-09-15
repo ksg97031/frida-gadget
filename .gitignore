@@ -5,3 +5,5 @@ venv/
 .DS_Store
 *.egg-info
 clean.sh
+test/demo-apk/*
+!test/demo-apk/*.apk

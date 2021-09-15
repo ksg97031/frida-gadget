@@ -17,10 +17,11 @@ Installation
     pip install frida-gadget
     
 Prerequirement
-------------
+----------------
 
 | You should install the Apktool and set the PATH environment variable. (`Install apktool <https://ibotpeaches.github.io/Apktool/install/>`_)
-| 
+|   
+
 .. code:: sh
 
    brew install apktool   
@@ -67,6 +68,7 @@ loadLibrary code will be injected
 
 Easy to re-sign your app by ``apk-signer``
 ********************************************
+
 .. code:: sh
 
     $ apk-signer /Users/ksg/demo/dist/handtrackinggpu.apk

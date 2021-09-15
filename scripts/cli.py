@@ -5,7 +5,6 @@ import click
 import shutil
 import logging
 from time import sleep
-from tqdm import tqdm
 from pathlib import Path
 from subprocess import check_output
 from colorlog import ColoredFormatter
