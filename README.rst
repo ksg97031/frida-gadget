@@ -53,12 +53,29 @@ Example
       [INFO] Gadget APK: /Users/ksg/demo/dist/handtrackinggpu.apk
       [INFO] All done
       
+    $ ls /Users/ksg/demo/dist/handtrackinggpu.apk
+      /Users/ksg/demo/dist/handtrackinggpu.apk
+      
     $ unzip -l /Users/ksg/demo/dist/handtrackinggpu.apk | grep libfrida-gadget
-       21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-15.1.1-android-arm64.so 
+      21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-15.1.1-android-arm64.so 
        
-| [ loadLibrary code was injected ]
+loadLibrary code will be injected
+********************************************
+
 .. image:: https://github.com/ksg97031/frida-gadget/blob/patch-frida-15.1.1/images/decompile.png
    :width: 600
+
+Easy to re-sign your app by ``apk-signer``
+********************************************
+.. code:: sh
+
+    $ apk-signer /Users/ksg/demo/dist/handtrackinggpu.apk
+      [Warning] Signing with default keystore.
+      [Warning] Please pass --key_path, --key_alias, --key_pass, --ks_pass parameter, if you want to use your keystore
+      /Users/ksg/demo/dist/handtrackinggpu-signed.apk
+     
+    $ adb install /Users/ksg/demo/dist/handtrackinggpu-signed.apk
+   
    
 Similar Projects
 -----------------
