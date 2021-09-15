@@ -7,3 +7,4 @@ venv/
 clean.sh
 test/demo-apk/*
 !test/demo-apk/*.apk
+.coverage
