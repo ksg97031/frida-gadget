@@ -111,7 +111,7 @@ Similar Projects
    :target: https://github.com/ksg97031/frida-gadget/pulse
 .. |Gift-Casper| image:: https://img.shields.io/badge/dynamic/json.svg?color=ff69b4&label=gifts%20received&prefix=%C2%A3&query=%24..sum&url=https%3A%2F%2Fcaspersci.uk.to%2Fgifts.json
    :target: https://cdcl.ml/sponsor
-.. |PyPI-Downloads| image:: https://img.shields.io/pypi/dm/frida-gadget?label=pypi%20downloads&logo=PyPI&logoColor=white
+.. |PyPI-Downloads| image:: https://static.pepy.tech/badge/frida-gadget
    :target: https://pepy.tech/project/frida-gadget
 .. |Py-Versions| image:: https://img.shields.io/pypi/pyversions/frida-gadget
    :target: https://pypi.org/project/frida-gadget
