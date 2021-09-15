@@ -32,12 +32,3 @@ jobs:
     
     - name: Push the Docker image
       run: docker push ghcr.io/ksg97031/frida-gadget:latest
-    
-    - name: Coverage
-      run: coverage run scripts/cli.py test/demo-apk/handtrackinggpu.apk
-      
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        fail_ci_if_error: true
-        token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
