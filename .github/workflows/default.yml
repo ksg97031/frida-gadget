@@ -1,0 +1,43 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test with pytest
+      run: pip install -r requirements.txt
+    - name: Setup dist
+      run: python setup.py sdist
+       
+    - uses: actions/upload-artifact@v1
+      with:
+        name: frida-gadget
+        path: dist
+        
+    - name: upload package
+      run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u ksg97031 --password-stdin
+
+    - name: Build the Docker image
+      run: docker build . --file docker/Dockerfile --tag ghcr.io/ksg97031/frida-gadget:latest
+    
+    - name: Push the Docker image
+      run: docker push ghcr.io/ksg97031/frida-gadget:latest
+    
+    - name: Coverage
+      run: coverage run scripts/cli.py test/demo-apk/handtrackinggpu.apk
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        fail_ci_if_error: true
+        token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos

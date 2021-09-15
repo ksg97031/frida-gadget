@@ -15,7 +15,8 @@ requires = [
     'androguard',
     'apk-signer',
     'pytest',
-    'colorlog'
+    'colorlog',
+    'coverage',
 ]
 
 setuptools.setup(
