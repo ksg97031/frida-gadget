@@ -10,7 +10,7 @@ with open("README.rst", "r") as fh:
     long_description = fh.read()
 
 requires = [
-    'frida==15.1.1',
+    'frida',
     'click',
     'androguard',
     'apk-signer',
@@ -34,7 +34,7 @@ setuptools.setup(
     package_data={
         'scripts': [
             "files/libfrida-gadget-15.1.1-android-arm.so",
-            "files/libfrida-gadget-15.1.1-android-arm64.so",
+            "files/libfrida-gadget-16.0.8-android-arm64.so",
             "files/libfrida-gadget-15.1.1-android-x86.so"
         ]
     },
