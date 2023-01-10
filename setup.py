@@ -34,7 +34,7 @@ setuptools.setup(
     package_data={
         'scripts': [
             "files/libfrida-gadget-15.1.1-android-arm.so",
-            "files/libfrida-gadget-15.1.1-android-arm64.so",
+            "files/libfrida-gadget-16.0.8-android-arm64.so",
             "files/libfrida-gadget-15.1.1-android-x86.so"
         ]
     },

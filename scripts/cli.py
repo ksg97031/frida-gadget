@@ -78,7 +78,7 @@ def run(apk_path: str, arch: str):
     logger.info("APK : '{}'".format(apk_path))
     logger.info("Gadget Architecture(--arch) : '{}'".format(arch))
 
-    gadget_so_paths = {'arm':'libfrida-gadget-15.1.1-android-arm.so', 'arm64':'libfrida-gadget-15.1.1-android-arm64.so', 'x86':'libfrida-gadget-15.1.1-android-x86.so'}
+    gadget_so_paths = {'arm':'libfrida-gadget-15.1.1-android-arm.so', 'arm64':'libfrida-gadget-16.0.8-android-arm64.so', 'x86':'libfrida-gadget-15.1.1-android-x86.so'}
     if arch not in gadget_so_paths:
         logger.error("--arch option only support [{}]")
         sys.exit(-1)
