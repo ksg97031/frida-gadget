@@ -10,7 +10,7 @@ with open("README.rst", "r") as fh:
     long_description = fh.read()
 
 requires = [
-    'frida==15.1.1',
+    'frida',
     'click',
     'androguard',
     'apk-signer',
