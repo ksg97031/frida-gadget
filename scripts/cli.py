@@ -1,195 +1,243 @@
+"""Frida gadget injector for Android APK"""
 import os
 import sys
-import re
-import click
 import shutil
-import logging
-from time import sleep
+import subprocess
+from shutil import which
 from pathlib import Path
-from subprocess import check_output
-from colorlog import ColoredFormatter
+from subprocess import check_output, CalledProcessError
+from .logger import logger
+from .frida_github import FridaGithub
+from . import INSTALLED_FRIDA_VERSION
+import click
 from androguard.core.bytecodes.apk import APK
 
-DEBUG_STEPS = [None, 'aftermanifest']
-DEBUG_STEP = DEBUG_STEPS[0]
 
-# LOGGING
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = ColoredFormatter(
-    "%(log_color)s[%(levelname)s] %(message)s",
-    datefmt=None,
-    reset=True,
-    log_colors={
-        'DEBUG':    'cyan',
-        'INFO':     'white,bold',
-        'INFOV':    'cyan,bold',
-        'WARNING':  'yellow',
-        'ERROR':    'red,bold',
-        'CRITICAL': 'red,bg_white',
-    },
-    secondary_log_colors={},
-    style='%'
-)
-ch.setFormatter(formatter)
-logger = logging.getLogger('frida-gadget')
-logger.setLevel(logging.DEBUG)
-logger.addHandler(ch)
-
-# APKTOOL, GADGET PATH
-import shutil
-from pathlib import Path
 p = Path(__file__)
 ROOT_DIR = p.parent.resolve()
 TEMP_DIR = ROOT_DIR.joinpath('temp')
 FILE_DIR = ROOT_DIR.joinpath('files')
 
-binaries = ['apktool']
-for binary in binaries:
-    path = shutil.which(binary)
-    if not path:
-        raise Exception("Please download and set to your environment this file: " + binary)
-
-    locals()[binary] = path
+APKTOOL = which("apktool")
+if not APKTOOL:
+    raise FileNotFoundError(
+        "Please download the 'apktool' and set it to your PATH environment.")
 
 def run_apktool(option, apk_path: str):
-    if isinstance(option, list):
-        cmd = [apktool] + option + [apk_path]
-    else:
-        cmd = [apktool, option, apk_path]
-    try:
-        output = check_output(cmd)
-    except:
-        raise Exception("Error", " ".join(cmd))
+    """Run apktool with option
 
-    return True
+    Args:
+        option (list|str): option of apktool
+        apk_path (str): path of apk file
+
+    """
+    if isinstance(option, list):
+        cmd = [APKTOOL] + option + [apk_path]
+    else:
+        cmd = [APKTOOL, option, apk_path]
+
+    pipe = subprocess.PIPE
+    with subprocess.Popen(cmd, stdin=pipe, stdout=pipe, stderr=pipe) as p:
+        _, stderr = p.communicate(b"\n")
+        if p.returncode != 0:
+            raise CalledProcessError(p.returncode, cmd, stderr)
+        return True
+
+def download_gadget(arch: str):
+    """Download the frida gadget library
+
+    Args:
+        arch (str): architecture of the device
+    """
+    g = FridaGithub(INSTALLED_FRIDA_VERSION)
+    assets = g.get_assets()
+    file = f'frida-gadget-{INSTALLED_FRIDA_VERSION}-android-{arch}.so.xz'
+    for asset in assets:
+        if asset['name'] == file:
+            logger.debug("Downloading the frida gadget library for %s", arch)
+            so_gadget_path = str(FILE_DIR.joinpath(file[:-3]))
+            return g.download_gadget_so(asset['browser_download_url'], so_gadget_path)            
+
+    raise FileNotFoundError(f"'{file}' not found in the github releases")
+
+def process(apk_path:str, arch:str, decompiled_path:str):
+    """Inject frida gadget into an APK
+
+    Args:
+        apk (APK): path of apk file
+        arch (str): architecture of the device
+        decompiled_path (str): decomplied path of apk file
+
+    Raises:
+        FileNotFoundError: file not found
+        NotImplementedError: not implemented
+    """
+    apk = APK(apk_path)
+    gadget_path = download_gadget(arch) # Download gadget library
+    gadget_name = Path(gadget_path).name
+    
+    main_activity = apk.get_main_activity()
+    main_activity = main_activity.split('.')
+    main_activity[-1] += '.smali'
+
+    # Add internet permission
+    logger.debug("Checking internet permission and extractNativeLibs settings")
+    android_manifest = decompiled_path.joinpath("AndroidManifest.xml")
+    txt = android_manifest.read_text(encoding="utf-8")
+    pos = txt.index('</manifest>')
+    permission = 'android.permission.INTERNET'
+
+    if permission not in txt:
+        logger.debug(
+            "Adding 'android.permission.INTERNET' permission to AndroidManifest.xml")
+        permissions_txt = f"<uses-permission android:name='{permission}'/>"
+        txt = txt[:pos] + permissions_txt + txt[pos:]
+
+    # Set extractNativeLibs to true
+    if ':extractNativeLibs="false"' in txt:
+        logger.debug('Editing the extractNativeLibs="true"')
+        txt = txt.replace(':extractNativeLibs="false"',
+                            ':extractNativeLibs="true"')
+    android_manifest.write_text(txt, encoding="utf-8")
+
+    # Search the main activity from smali files
+    logger.debug('Searching for the main activity in the smali files')
+    target_smali = None
+    for smali_dir in decompiled_path.glob("smali*/"):
+        target_smali = smali_dir.joinpath(*main_activity)
+        if target_smali.exists():
+            break
+
+    if not target_smali or not target_smali.exists():
+        raise FileNotFoundError(
+            "Not Found, target class file: " + ".".join(main_activity))
+
+    logger.debug("Found the main activity at '%s'", str(target_smali))
+    text = target_smali.read_text()
+    text = text.replace(
+        "invoke-virtual {v0, v1}, Ljava/lang/Runtime;->exit(I)V", "")
+    text = text.split("\n")
+
+    # Find onCreate method and inject loadLibary code for frida gadget
+    logger.debug(
+        'Locating the onCreate method and injecting the loadLibrary code')
+    idx = 0
+    status = False
+    while idx != len(text):
+        line = text[idx].strip()
+        if line.startswith('.method') and "onCreate(" in line:
+            locals_line_bit = text[idx + 1].split(".locals ")
+            locals_variable_count = int(locals_line_bit[1])
+            locals_line_bit[1] = str(locals_variable_count + 1)        
+            load_library_name = gadget_name[:-3] # without extension
+            if load_library_name.startswith('lib'):
+                load_library_name = load_library_name[3:]
+                
+            new_locals_line = ".locals ".join(locals_line_bit)
+            text[idx + 1] = new_locals_line
+
+            load_str = f'    const-string v{locals_variable_count}, "{load_library_name}"'
+            load_library = f'    invoke-static {{v{locals_variable_count}}}, \
+                Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V'
+            text.insert(idx + 2, load_library)
+            text.insert(idx + 2, load_str)
+            status = True
+            break
+        idx += 1
+
+    if not status:
+        issue_url = 'https://github.com/ksg97031/frida-gadget/issues'
+        logger.error(
+            "Cannot find the onCreate method in the main activity.")
+        logger.error(
+            "Please report the issue at %s with the following information:", issue_url)
+        logger.error("APK Name: <Your APK Name>")
+        logger.error("APK Version: <Your APK Version>")
+        logger.error("Device/Emulator OS: <Your Device/Emulator OS>")
+        logger.error("Frida Version: <Your Frida Version>")
+        sys.exit(-1)
+
+    # Replace the smali file with the new one
+    target_smali.write_text("\n".join(text))
+
+    # Copy the frida gadget library to the lib directory
+    lib = decompiled_path.joinpath('lib')
+    if not lib.exists():
+        lib.mkdir()
+    arch_dirnames = {'arm': 'armeabi-v7a', 'arm64': 'arm64-v8a'}
+    if arch not in arch_dirnames:
+        raise NotImplementedError(f"The architecture '{arch}' is not supported.")
+
+    arch_dirname = arch_dirnames[arch]
+    lib = lib.joinpath(arch_dirname)
+    if not lib.exists():
+        lib.mkdir()
+
+    lib_library_name = gadget_name
+    if not lib_library_name.startswith('lib'):
+        lib_library_name = 'lib' + gadget_name
+    shutil.copy(gadget_path, lib.joinpath(lib_library_name))
+
+    logger.debug('Recompiling the new APK using apktool')
+
+
 
 @click.command()
 @click.option('--arch', default="arm64", help='Support [arm, arm64, x86]')
 @click.argument('apk_path')
 def run(apk_path: str, arch: str):
+    """Inject Frida gadget into an APK
+
+    Args:
+        apk_path (str): path of apk file
+        arch (str): type of device architecture
+
+    Raises:
+        Exception: _description_
+        Exception: _description_
+        Exception: _description_
+
+    Returns:
+        _type_: _description_
+    """    
     if not os.path.exists(apk_path):
-        logger.error("Can't find the target APK '{}'".format(apk_path))
+        logger.error("Can't find the target APK '%s'", apk_path)
         sys.exit(-1)
-    
-    apk = APK(apk_path)
+
+    assert apk_path.endswith('.apk')
     apk_path = Path(apk_path)
 
-    logger.info("APK : '{}'".format(apk_path))
-    logger.info("Gadget Architecture(--arch) : '{}'".format(arch))
+    logger.info("APK: '%s'", apk_path)
+    logger.info("Gadget Architecture(--arch): %s%s", arch, "(default)" if arch == "arm64" else "")
 
-    gadget_so_paths = {'arm':'libfrida-gadget-15.1.1-android-arm.so', 'arm64':'libfrida-gadget-15.1.1-android-arm64.so', 'x86':'libfrida-gadget-15.1.1-android-x86.so'}
-    if arch not in gadget_so_paths:
-        logger.error("--arch option only support [{}]")
+    arch = arch.lower()
+    supported_archs = ['arm', 'arm64', 'x86']
+    if arch not in supported_archs: 
+        logger.error(
+            "The --arch option only supports the following architectures: %s",
+            ", ".join(supported_archs)
+        )
         sys.exit(-1)
 
-    p_gadget_so = FILE_DIR.joinpath(gadget_so_paths[arch])
-    if not p_gadget_so.exists():
-        raise Exception("Can't find the target so file: " + str(p_gadget_so.resolve()))
-
-    # Set main activity
-    main_activity = apk.get_main_activity()
-    main_activity = main_activity.split('.')
-    main_activity[-1] += '.smali'
-
-    # APK decompile with apktool
+    # Make temp directory for decompile
     logger.debug("Decompiling the target APK using apktool")
     decompiled_path = TEMP_DIR.joinpath(str(apk_path.resolve())[:-4])
     if decompiled_path.exists():
         shutil.rmtree(decompiled_path)
-
     decompiled_path.mkdir()
-    result = run_apktool(['d', '-o', str(decompiled_path.resolve()), '-f'], str(apk_path.resolve()))
 
-    if result:
-        logger.debug("Checking the internet, extractNativeLibs settings")
-        # Add internet permissions
-        android_manifest = decompiled_path.joinpath("AndroidManifest.xml")
-        txt = android_manifest.read_text()
-        pos = txt.index('</manifest>')
-        permission = 'android.permission.INTERNET'
+    # APK decompile with apktool
+    run_apktool(['d', '-o', str(decompiled_path.resolve()), '-f'], str(apk_path.resolve()))
 
-        if permission not in txt:
-            logger.debug("Adding 'android.permission.INTERNET' permission to AndroidManifest.xml")
-            permissions_txt = "<uses-permission android:name='%s'/>" % permission
-            txt = txt[:pos] + permissions_txt + txt[pos:]
+    # Process if decompile is success
+    process(apk_path, arch, decompiled_path)
 
-        if ':extractNativeLibs="false"' in txt:
-            logger.debug('Editing the extractNativeLibs="true"')
-            txt = txt.replace(':extractNativeLibs="false"', ':extractNativeLibs="true"')
-        android_manifest.write_text(txt)
-
-        if DEBUG_STEP != DEBUG_STEPS[1]:
-            # Read main activity smali code
-            logger.debug('Searching the main activity from smali files')
-            target_smali = None
-            for smali_dir in decompiled_path.glob("smali*/"):
-                target_smali = smali_dir.joinpath(*main_activity)
-                if target_smali.exists():
-                    break
-
-            if not target_smali or not target_smali.exists():
-                raise Exception("Not Found, target class file: " + ".".join(main_activity))
-
-            logger.debug("Main activity founded at '{}'".format(str(target_smali)))
-            text = target_smali.read_text()
-            text = text.replace("invoke-virtual {v0, v1}, Ljava/lang/Runtime;->exit(I)V", "")
-            text = text.split("\n")
-
-            # Find onCreate method and inject loadLibary code for frida gadget
-            logger.debug('Finding the onCreate method and inject loadLibrary code')
-            idx = 0
-            flag = False
-            while idx != len(text):
-                line = text[idx].strip()
-                if line.startswith('.method') and "onCreate(" in line:
-                    locals_line_bit = text[idx + 1].split(".locals ")
-                    locals_variable_count = int(locals_line_bit[1])
-                    locals_line_bit[1] = str(locals_variable_count + 1)
-                    new_locals_line = ".locals ".join(locals_line_bit)
-                    text[idx + 1] = new_locals_line
-
-                    load_str = '    const-string v%d, "%s"' % (
-                        locals_variable_count, p_gadget_so.name[3:-3])
-                    load_library = '    invoke-static {v%d}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V' % (
-                        locals_variable_count)
-                    text.insert(idx + 2, load_library)
-                    text.insert(idx + 2, load_str)
-                    flag = True
-                    break
-                idx += 1
-
-            if not flag:
-                logger.error("Can't find the onCreate method in main activity")
-                logger.error("Please request issue to https://github.com/ksg97031/frida-gadget/issues")
-                sys.exit(-1)
-             
-            target_smali.write_text("\n".join(text)) # rewrite main_activity smali file
-
-            # Copy gadget library to app's library directory 
-            lib = decompiled_path.joinpath('lib')
-            if not lib.exists():
-                lib.mkdir()
-            arch_dirnames = {'arm':'armeabi-v7a', 'arm64': 'arm64-v8a'}
-            if arch not in arch_dirnames:
-                raise Exception('The architecture "%s" is not support' % arch)
-
-            arch_dirname = arch_dirnames[arch]
-            lib = lib.joinpath(arch_dirname)
-            if not lib.exists():
-                lib.mkdir()
-            shutil.copy(p_gadget_so, lib.joinpath(p_gadget_so.name))
-
-            logger.debug('Recompiling the new APK using apktool')
-        # Rebuild with apktool, print apk_path if process is success 
-        result = run_apktool('b', str(decompiled_path.resolve()))
-        if result:
-            apk_path = decompiled_path.joinpath('dist', apk_path.name)
-            logger.info('Success : ' + str(apk_path.resolve()))
-            return 0
-        else:
-            shutil.rmtree(decompiled_path)
-            return -1
+    # Rebuild with apktool, print apk_path if process is success    
+    run_apktool('b', str(decompiled_path.resolve()))        
+    apk_path = decompiled_path.joinpath('dist', apk_path.name)
+    logger.info('Success!\n')
+    logger.info('Output: %s', str(apk_path.resolve()))    
 
 if __name__ == '__main__':
+    # pylint: disable=no-value-for-parameter
     run()

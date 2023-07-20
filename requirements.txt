@@ -1,7 +1,8 @@
-frida==15.1.1
 click
 androguard
 apk-signer
 pytest
 colorlog
 coverage
+pylint
+requests

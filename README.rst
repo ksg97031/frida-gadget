@@ -43,22 +43,23 @@ Example
 .. code:: sh
 
     $ frida-gadget /Users/ksg/demo.apk  --arch arm64
-      [INFO] APK: '/Users/ksg/demo.apk'
-      [INFO] Gadget Architecture(--arch): 'arm64'
+      [INFO] Auto-detected frida version: 16.1.3
+      [INFO] APK: '[REDACTED]\frida-gadget\tests\demo-apk\handtrackinggpu.apk'
+      [INFO] Gadget Architecture(--arch): arm64(default)
       [DEBUG] Decompiling the target APK using apktool
-      [DEBUG] Checking the internet, extractNativeLibs settings
-      [DEBUG] Searching the main activity from smali files
-      [DEBUG] Main activity founded at '/Users/ksg/demo/smali/com/google/mediapipe/apps/handtrackinggpu/MainActivity.smali'
-      [DEBUG] Finding the onCreate method and inject loadLibrary code
+      [DEBUG] Downloading the frida gadget library for arm64
+      [DEBUG] Checking internet permission and extractNativeLibs settings
+      [DEBUG] Adding 'android.permission.INTERNET' permission to AndroidManifest.xml
+      [DEBUG] Searching for the main activity in the smali files
+      [DEBUG] Found the main activity at '[REDACTED]\frida-gadget\tests\demo-apk\handtrackinggpu\smali\com\google\mediapipe\apps\handtrackinggpu\MainActivity.smali'
+      [DEBUG] Locating the onCreate method and injecting the loadLibrary code
       [DEBUG] Recompiling the new APK using apktool
-      [INFO] Gadget APK: /Users/ksg/demo/dist/handtrackinggpu.apk
-      [INFO] All done
+      [INFO] Success!
+
+      [INFO] Output: [REDACTED]\frida-gadget\tests\demo-apk\handtrackinggpu\dist\handtrackinggpu.apk
       
-    $ ls /Users/ksg/demo/dist/handtrackinggpu.apk
-      /Users/ksg/demo/dist/handtrackinggpu.apk
-      
-    $ unzip -l /Users/ksg/demo/dist/handtrackinggpu.apk | grep libfrida-gadget
-      21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-15.1.1-android-arm64.so 
+    $ unzip -l handtrackinggpu.apk | grep libfrida-gadget
+      21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-16.1.3-android-arm64.so 
        
 loadLibrary code will be injected
 ********************************************
@@ -71,12 +72,12 @@ Easy to re-sign your app by ``apk-signer``
 
 .. code:: sh
 
-    $ apk-signer /Users/ksg/demo/dist/handtrackinggpu.apk
+    $ apk-signer handtrackinggpu.apk
       [Warning] Signing with default keystore.
       [Warning] Please pass --key_path, --key_alias, --key_pass, --ks_pass parameter, if you want to use your keystore
-      /Users/ksg/demo/dist/handtrackinggpu-signed.apk
+      handtrackinggpu-signed.apk
      
-    $ adb install /Users/ksg/demo/dist/handtrackinggpu-signed.apk
+    $ adb install handtrackinggpu-signed.apk
    
    
 Similar Projects
@@ -123,8 +124,6 @@ Similar Projects
    :target: https://libraries.io/pypi/frida-gadget
 .. |Libraries-Dependents| image:: https://img.shields.io/librariesio/dependent-repos/pypi/frida-gadget.svg?logo=koding&logoColor=white
     :target: https://github.com/ksg97031/frida-gadget/network/dependents
-.. |Frida-Version| image:: https://img.shields.io/badge/frida-15.1.1-blueviolet
-    :target: https://github.com/frida/frida/releases/tag/15.1.1
 .. |OpenHub-Status| image:: https://www.openhub.net/p/frida-gadget/widgets/project_thin_badge?format=gif
    :target: https://www.openhub.net/p/frida-gadget?ref=Thin+badge
 .. |awesome-python| image:: https://awesome.re/mentioned-badge.svg
