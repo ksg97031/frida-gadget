@@ -4,5 +4,9 @@
     },
     "python.formatting.provider": "none",
     "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "python.linting.pylintArgs": [
+        "--init-hook",
+        "import sys; sys.path.append('C:\\Users\\ksg\\frida-gadget')"
+    ]
 }
