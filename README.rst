@@ -10,7 +10,7 @@ frida-gadget
 Installation
 ------------
 
-|Py-Versions| |Frida-Version| |PyPI-Downloads| |Libraries-Dependents|
+|Py-Versions| |PyPI-Downloads| |Libraries-Dependents|
 
 .. code:: sh
 
