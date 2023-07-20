@@ -42,7 +42,7 @@ Example
 ~~~~~~~
 .. code:: sh
 
-    $ frida-gadget /Users/ksg/demo.apk  --arch arm64
+    $ frida-gadget handtrackinggpu.apk --arch arm64
       [INFO] Auto-detected frida version: 16.1.3
       [INFO] APK: '[REDACTED]\frida-gadget\tests\demo-apk\handtrackinggpu.apk'
       [INFO] Gadget Architecture(--arch): arm64(default)
