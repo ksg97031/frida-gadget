@@ -67,14 +67,11 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
     """
     logger.debug('Searching for the main activity in the smali files')
     target_smali = None
-    for smali_dir in decompiled_path.glob("smali*/"):
-        target_smali = smali_dir.joinpath(*main_activity)
-        if target_smali.exists():
-            break
-
+    
+    target_relative_path = main_activity.replace(".", os.sep)
+    target_smali = decompiled_path.joinpath("smali", target_relative_path + ".smali")
     if not target_smali or not target_smali.exists():
-        raise FileNotFoundError(
-            "Not Found, target class file: " + ".".join(main_activity))
+        raise FileNotFoundError(f"The target class file {target_smali} was not found.")
 
     logger.debug("Found the main activity at '%s'", str(target_smali))
     text = target_smali.read_text()
@@ -165,13 +162,13 @@ def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str):
     apk = APK(apk_path)
     gadget_path = download_gadget(arch) # Download gadget library
     gadget_name = Path(gadget_path).name
-    main_activity_smali = apk.get_main_activity().split(".")[-1] + ".smail"
+    main_activity = apk.get_main_activity()
     # Apply permission to android manifest
     modify_manifest(decompiled_path)
 
     # Search the main activity from smali files
     load_library_name = gadget_name[:-3]
-    insert_loadlibary(decompiled_path, main_activity_smali, load_library_name)
+    insert_loadlibary(decompiled_path, main_activity, load_library_name)
 
     # Copy the frida gadget library to the lib directory
     lib = decompiled_path.joinpath('lib')
