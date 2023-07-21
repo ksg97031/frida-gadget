@@ -1,9 +1,6 @@
 """init file for scripts folder."""
-from shutil import which
-from pathlib import Path
 from .logger import logger
 import pip
-from colorlog import ColoredFormatter
 
 
 def import_or_install(package):

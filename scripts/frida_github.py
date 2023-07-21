@@ -86,7 +86,7 @@ class FridaGithub(object):
         filepath = Path(output_file)
         if filepath.exists() and filepath.stat().st_size > 0:
             return
-        
+
         response = requests.get(url, stream=True)
         with open(output_file, 'wb') as f:
             for chunk in response.iter_content(chunk_size=1024):
