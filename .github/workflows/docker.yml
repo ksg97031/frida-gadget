@@ -7,15 +7,14 @@ on:
     branches: [ trunk ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
-    - name: Test with pytest
+    - name: Install packages
       run: pip install -r requirements.txt
+      
     - name: Setup dist
       run: python setup.py sdist
        
@@ -24,11 +23,19 @@ jobs:
         name: frida-gadget
         path: dist
         
-    - name: upload package
-      run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u ksg97031 --password-stdin
-
-    - name: Build the Docker image
-      run: docker build . --file docker/Dockerfile --tag ghcr.io/ksg97031/frida-gadget:latest
-    
-    - name: Push the Docker image
-      run: docker push ghcr.io/ksg97031/frida-gadget:latest
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+        
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      id: docker_build
+      with:
+        context: .
+        file: ./docker/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/frida-gadget:latest
