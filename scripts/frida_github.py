@@ -2,10 +2,10 @@
 # Base code is sourced from the GitHub repository of Objection.
 # Source: https://github.com/sensepost/objection/blob/master/objection/utils/patchers/github.py
 import lzma
-import requests
 from pathlib import Path
+import requests
 
-class FridaGithub(object):
+class FridaGithub:
     """ Interact with Github """
 
     GITHUB_LATEST_RELEASE = 'https://api.github.com/repos/frida/frida/releases/latest'
@@ -37,7 +37,7 @@ class FridaGithub(object):
             return self.request_cache[endpoint]
 
         # get a new response
-        results = requests.get(endpoint).json()
+        results = requests.get(endpoint, timeout=30).json()
 
         # cache it
         self.request_cache[endpoint] = results
@@ -87,11 +87,11 @@ class FridaGithub(object):
         if filepath.exists() and filepath.stat().st_size > 0:
             return
 
-        response = requests.get(url, stream=True)
-        with open(output_file, 'wb') as f:
+        response = requests.get(url, timeout=600, stream=True)
+        with open(output_file, 'wb') as asset:
             for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
-                    f.write(chunk)
+                    asset.write(chunk)
 
     def download_gadget_so(self, url, gadget_fullpath: str) -> str:
         """
@@ -114,4 +114,3 @@ class FridaGithub(object):
             gadget_file.write(decompressed_data)
 
         return gadget_fullpath
-    
