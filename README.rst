@@ -9,7 +9,7 @@ frida-gadget
 Installation
 ------------
 
-|Py-Versions| |PyPI-Downloads| |Libraries-Dependents|
+|Py-Versions| |PyPI-Downloads| |GitHub-Stars| |GitHub-Status|
 
 .. code:: sh
 
@@ -124,7 +124,7 @@ Similar Projects
 .. |Conda-Forge-Status| image:: https://img.shields.io/conda/v/conda-forge/frida-gadget.svg?label=conda-forge&logo=conda-forge
    :target: https://anaconda.org/conda-forge/frida-gadget
 .. |Docker| image:: https://img.shields.io/badge/docker-pull-blue.svg?logo=docker&logoColor=white
-   :target: https://hub.docker.com/r/ksg97031/frida-gadget
+   :target: https://github.com/ksg97031/frida-gadget/pkgs/container/frida-gadget
 .. |Libraries-Rank| image:: https://img.shields.io/librariesio/sourcerank/pypi/frida-gadget.svg?logo=koding&logoColor=white
    :target: https://libraries.io/pypi/frida-gadget
 .. |Libraries-Dependents| image:: https://img.shields.io/librariesio/dependent-repos/pypi/frida-gadget.svg?logo=koding&logoColor=white
