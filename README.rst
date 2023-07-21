@@ -1,11 +1,10 @@
 frida-gadget
 ============
 
-|Docker| |Coverage-Status| |Branch-Coverage-Status| |Codacy-Grade| |Libraries-Rank|
+|Codacy-Grade| |Docker| |Libraries-Rank|
 
 
-| ``frida-gadget`` is a APK patcher for  `frida gadget <https://frida.re/docs/gadget/>`__.
-| I hope this will help you to patch APK when you want to utilize the Frida gadget.
+| ``frida-gadget`` is a tool that can be used to patch APKs in order to utilize the `Frida gadget <https://frida.re/docs/gadget/>`_.
 
 Installation
 ------------
@@ -19,12 +18,18 @@ Installation
 Prerequirement
 ----------------
 
-| You should install the Apktool and set the PATH environment variable. (`Install apktool <https://ibotpeaches.github.io/Apktool/install/>`_)
+| You should install Apktool and add it to your PATH environment variable.
 |   
 
 .. code:: sh
 
-   brew install apktool   
+   # Install Apktool on macOS
+   brew install apktool
+    
+   # Add Apktool to your PATH environment variable
+   export PATH=$PATH:$HOME/.brew/bin 
+
+| Other Platforms: `Install Guide <https://ibotpeaches.github.io/Apktool/install/>`_
 
 Usage
 ------------
