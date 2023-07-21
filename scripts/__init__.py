@@ -1,6 +1,7 @@
 """init file for scripts folder."""
+import sys
+import subprocess
 from .logger import logger
-import pip
 
 
 def import_or_install(package):
@@ -12,9 +13,11 @@ def import_or_install(package):
     try:
         __import__(package)
     except ImportError:
-        pip.main(['install', '--user', package])
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'frida', '--user'])
+        logger.info('Try Again')
+        sys.exit(0)
 
 
 import_or_install('frida')  # Install missing packages
 INSTALLED_FRIDA_VERSION: str = __import__('frida').__version__  # Get installed frida version
-logger.info("Auto-detected frida version: " + INSTALLED_FRIDA_VERSION)
+logger.info("Auto-detected frida version: %s", INSTALLED_FRIDA_VERSION)
