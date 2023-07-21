@@ -39,9 +39,16 @@ Usage
     $ frida-gadget --help
       Usage: frida-gadget [OPTIONS] APK_PATH
 
-      Options:
-        --arch TEXT  Support [arm, arm64, x86]
-        --help       Show this message and exit.
+      Patch an APK with the Frida gadget library
+    
+      Args:     apk_path (str): Path of the target APK file     
+                arch (str): Target architecture of the device
+    
+      Outputs:     Injected APK file
+    
+    Options:
+      --arch TEXT  Support [arm, arm64, x86]
+      --help       Show this message and exit.
 
 Example
 ~~~~~~~
