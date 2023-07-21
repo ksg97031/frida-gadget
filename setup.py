@@ -22,7 +22,7 @@ requires = [
 setuptools.setup(
     name="frida-gadget",
     python_requires='>=3.6',
-    version="1.1.1",
+    version="1.1.2",
     author="ksg97031",
     author_email="ksg97031@gmail.com",
     description="Frida gadget into an APK",
