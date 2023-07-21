@@ -194,7 +194,7 @@ def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str):
 
 @click.command()
 @click.option('--arch', default="arm64", help='Support [arm, arm64, x86]')
-@click.argument('apk_path')
+@click.argument('apk_path', type=click.Path(exists=True), required=True)
 def run(apk_path: str, arch: str):
     """Patch an APK with the Frida gadget library
 
@@ -205,10 +205,6 @@ def run(apk_path: str, arch: str):
     Outputs:
         Injected APK file
     """
-    if not os.path.exists(apk_path):
-        logger.error("Can't find the target APK '%s'", apk_path)
-        sys.exit(-1)
-
     assert apk_path.endswith('.apk')
     apk_path = Path(apk_path)
 
