@@ -69,7 +69,7 @@ Example
 loadLibrary code will be injected
 ********************************************
 
-.. image:: https://github.com/ksg97031/frida-gadget/blob/patch-frida-15.1.1/images/decompile.png
+.. image:: https://github.com/ksg97031/frida-gadget/blob/trunk/images/decompile.png
    :width: 600
 
 Easy to re-sign your app by ``apk-signer``
