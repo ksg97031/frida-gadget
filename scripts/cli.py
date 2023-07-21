@@ -5,7 +5,6 @@ import shutil
 import subprocess
 from shutil import which
 from pathlib import Path
-from subprocess import check_output, CalledProcessError
 from .logger import logger
 from .frida_github import FridaGithub
 from . import INSTALLED_FRIDA_VERSION
@@ -40,7 +39,7 @@ def run_apktool(option, apk_path: str):
     with subprocess.Popen(cmd, stdin=pipe, stdout=pipe, stderr=pipe) as p:
         _, stderr = p.communicate(b"\n")
         if p.returncode != 0:
-            raise CalledProcessError(p.returncode, cmd, stderr)
+            raise subprocess.CalledProcessError(p.returncode, cmd, stderr)
         return True
 
 def download_gadget(arch: str):
@@ -56,7 +55,7 @@ def download_gadget(arch: str):
         if asset['name'] == file:
             logger.debug("Downloading the frida gadget library for %s", arch)
             so_gadget_path = str(FILE_DIR.joinpath(file[:-3]))
-            return g.download_gadget_so(asset['browser_download_url'], so_gadget_path)            
+            return g.download_gadget_so(asset['browser_download_url'], so_gadget_path)
 
     raise FileNotFoundError(f"'{file}' not found in the github releases")
 
@@ -75,7 +74,7 @@ def process(apk_path:str, arch:str, decompiled_path:str):
     apk = APK(apk_path)
     gadget_path = download_gadget(arch) # Download gadget library
     gadget_name = Path(gadget_path).name
-    
+
     main_activity = apk.get_main_activity()
     main_activity = main_activity.split('.')
     main_activity[-1] += '.smali'
@@ -199,7 +198,7 @@ def run(apk_path: str, arch: str):
 
     Returns:
         _type_: _description_
-    """    
+    """
     if not os.path.exists(apk_path):
         logger.error("Can't find the target APK '%s'", apk_path)
         sys.exit(-1)
@@ -212,7 +211,7 @@ def run(apk_path: str, arch: str):
 
     arch = arch.lower()
     supported_archs = ['arm', 'arm64', 'x86']
-    if arch not in supported_archs: 
+    if arch not in supported_archs:
         logger.error(
             "The --arch option only supports the following architectures: %s",
             ", ".join(supported_archs)
@@ -233,10 +232,11 @@ def run(apk_path: str, arch: str):
     process(apk_path, arch, decompiled_path)
 
     # Rebuild with apktool, print apk_path if process is success    
-    run_apktool('b', str(decompiled_path.resolve()))        
+    run_apktool('b', str(decompiled_path.resolve()))
     apk_path = decompiled_path.joinpath('dist', apk_path.name)
     logger.info('Success!\n')
-    logger.info('Output: %s', str(apk_path.resolve()))    
+    logger.info('Output: %s', str(apk_path.resolve()))
+
 
 if __name__ == '__main__':
     # pylint: disable=no-value-for-parameter
