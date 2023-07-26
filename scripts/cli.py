@@ -67,7 +67,7 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
     """
     logger.debug('Searching for the main activity in the smali files')
     target_smali = None
-    
+
     target_relative_path = main_activity.replace(".", os.sep)
     target_smali = decompiled_path.joinpath("smali", target_relative_path + ".smali")
     if not target_smali or not target_smali.exists():
