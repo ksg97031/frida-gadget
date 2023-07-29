@@ -1,6 +1,10 @@
 frida-gadget
 ============
 
+.. image:: https://api.codacy.com/project/badge/Grade/f42e0f9cbc774152887d116fc3e58bf3
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/gh/ksg97031/frida-gadget?utm_source=github.com&utm_medium=referral&utm_content=ksg97031/frida-gadget&utm_campaign=Badge_Grade
+
 |Codacy-Grade| |Docker| |Libraries-Rank|
 
 
