@@ -86,17 +86,16 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
         "invoke-virtual {v0, v1}, Ljava/lang/Runtime;->exit(I)V", "")
     text = text.split("\n")
 
-    # Find onCreate method and inject loadLibary code for frida gadget
-    logger.debug(
-        'Locating the onCreate method and injecting the loadLibrary code')
-    idx = 0
-    status = False
-    inject_methods = ["onCreate(", "<init>"]
 
-    for method_name in inject_methods:
+    logger.debug(
+        'Locating the entrypoint method and injecting the loadLibrary code')
+    status = False
+    entrypoints = ["onCreate(", "<init>"]
+    for entrypoint in entrypoints:
+        idx = 0
         while idx != len(text):
             line = text[idx].strip()
-            if line.startswith('.method') and f"{method_name}" in line:
+            if line.startswith('.method') and entrypoint in line:
                 locals_line_bit = text[idx + 1].split(".locals ")
                 locals_variable_count = int(locals_line_bit[1])
                 locals_line_bit[1] = str(locals_variable_count + 1)
@@ -121,13 +120,12 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
     if not status:
         issue_url = 'https://github.com/ksg97031/frida-gadget/issues'
         logger.error(
-            "\nCannot find the appropriate position in the main activity.")
+            "Cannot find the appropriate position in the main activity.")
         logger.error(
             "Please report the issue at %s with the following information:", issue_url)
         logger.error("APK Name: <Your APK Name>")
         logger.error("APK Version: <Your APK Version>")
-        logger.error("Device/Emulator OS: <Your Device/Emulator OS>")
-        logger.error("Frida Version: <Your Frida Version>")
+        logger.error("APKTOOL Version: <Your APKTOOL Version>")
         sys.exit(-1)
 
     # Replace the smali file with the new one
@@ -186,7 +184,7 @@ def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str):
     lib = decompiled_path.joinpath('lib')
     if not lib.exists():
         lib.mkdir()
-    arch_dirnames = {'arm': 'armeabi-v7a', 'arm64': 'arm64-v8a'}
+    arch_dirnames = {'arm': 'armeabi-v7a', 'x86':'x86', 'arm64': 'arm64-v8a', 'x86_64':'x86_64'}
     if arch not in arch_dirnames:
         raise NotImplementedError(f"The architecture '{arch}' is not supported.")
 
@@ -205,9 +203,11 @@ def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str):
 
 
 @click.command()
-@click.option('--arch', default="arm64", help='Support [arm, arm64, x86]')
+@click.option('--arch', default="arm64", help='Support [arm, arm64, x86, x86_64]')
+@click.option('--skip-decompile', is_flag=True)
+@click.option('--skip-recompile', is_flag=True)
 @click.argument('apk_path', type=click.Path(exists=True), required=True)
-def run(apk_path: str, arch: str):
+def run(apk_path: str, skip_decompile:bool, skip_recompile:bool, arch: str):
     """Patch an APK with the Frida gadget library
 
     Args:
@@ -217,14 +217,13 @@ def run(apk_path: str, arch: str):
     Outputs:
         Injected APK file
     """
-    assert apk_path.endswith('.apk')
     apk_path = Path(apk_path)
 
     logger.info("APK: '%s'", apk_path)
     logger.info("Gadget Architecture(--arch): %s%s", arch, "(default)" if arch == "arm64" else "")
 
     arch = arch.lower()
-    supported_archs = ['arm', 'arm64', 'x86']
+    supported_archs = ['arm', 'arm64', 'x86', 'x86_64']
     if arch not in supported_archs:
         logger.error(
             "The --arch option only supports the following architectures: %s",
@@ -233,23 +232,25 @@ def run(apk_path: str, arch: str):
         sys.exit(-1)
 
     # Make temp directory for decompile
-    logger.debug("Decompiling the target APK using apktool")
+   
     decompiled_path = TEMP_DIR.joinpath(str(apk_path.resolve())[:-4])
-    if decompiled_path.exists():
-        shutil.rmtree(decompiled_path)
-    decompiled_path.mkdir()
+    if not skip_decompile:
+        logger.debug("Decompiling the target APK using apktool")
+        if decompiled_path.exists():
+            shutil.rmtree(decompiled_path)
+        decompiled_path.mkdir()
 
-    # APK decompile with apktool
-    run_apktool(['d', '-o', str(decompiled_path.resolve()), '-f'], str(apk_path.resolve()))
+        # APK decompile with apktool
+        run_apktool(['d', '-o', str(decompiled_path.resolve()), '-f'], str(apk_path.resolve()))
 
     # Process if decompile is success
     inject_gadget_into_apk(apk_path, arch, decompiled_path)
 
     # Rebuild with apktool, print apk_path if process is success
-    run_apktool('b', str(decompiled_path.resolve()))
-    apk_path = decompiled_path.joinpath('dist', apk_path.name)
-    logger.info('Success!\n')
-    logger.info('Output: %s', str(apk_path.resolve()))
+    if not skip_recompile:
+        run_apktool('b', str(decompiled_path.resolve()))
+        apk_path = decompiled_path.joinpath('dist', apk_path.name)
+        logger.info('Success: %s', str(apk_path.resolve()))
 
 
 if __name__ == '__main__':

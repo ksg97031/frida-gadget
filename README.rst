@@ -5,11 +5,12 @@ frida-gadget
 
 
 | ``frida-gadget`` is a tool that can be used to patch APKs in order to utilize the `Frida gadget <https://frida.re/docs/gadget/>`_.
+| This tool automates the process of downloading the Frida gadget library and injecting the loadlibrary code into the main activity.
 
 Installation
 ------------
 
-|Py-Versions| |PyPI-Downloads| |GitHub-Stars| |GitHub-Status|
+|Py-Versions| |PyPI-Downloads|
 
 .. code:: sh
 
@@ -39,16 +40,18 @@ Usage
     $ frida-gadget --help
       Usage: frida-gadget [OPTIONS] APK_PATH
 
-      Patch an APK with the Frida gadget library
-    
-      Args:     apk_path (str): Path of the target APK file     
-                arch (str): Target architecture of the device
-    
-      Outputs:     Injected APK file
-    
-    Options:
-      --arch TEXT  Support [arm, arm64, x86]
-      --help       Show this message and exit.
+         Patch an APK with the Frida gadget library
+
+         Args:     apk_path (str): Path of the target APK file     
+                   arch     (str): Target architecture of the device
+
+         Outputs:  Injected APK file
+
+      Options:
+         --arch TEXT       Support [arm, arm64, x86, x86_64]
+         --skip-decompile
+         --skip-recompile
+         --help            Show this message and exit.
 
 Example
 ~~~~~~~
@@ -56,7 +59,7 @@ Example
 
     $ frida-gadget handtrackinggpu.apk --arch arm64
       [INFO] Auto-detected frida version: 16.1.3
-      [INFO] APK: '[REDACTED]\frida-gadget\tests\demo-apk\handtrackinggpu.apk'
+      [INFO] APK: '[REDACTED]\demo-apk\handtrackinggpu.apk'
       [INFO] Gadget Architecture(--arch): arm64(default)
       [DEBUG] Decompiling the target APK using apktool
       [DEBUG] Downloading the frida gadget library for arm64
@@ -66,9 +69,8 @@ Example
       [DEBUG] Found the main activity at '[REDACTED]\frida-gadget\tests\demo-apk\handtrackinggpu\smali\com\google\mediapipe\apps\handtrackinggpu\MainActivity.smali'
       [DEBUG] Locating the onCreate method and injecting the loadLibrary code
       [DEBUG] Recompiling the new APK using apktool
-      [INFO] Success!
 
-      [INFO] Output: [REDACTED]\frida-gadget\tests\demo-apk\handtrackinggpu\dist\handtrackinggpu.apk
+      [INFO] Success: [REDACTED]\demo-apk\handtrackinggpu\dist\handtrackinggpu.apk
       
     $ unzip -l handtrackinggpu.apk | grep libfrida-gadget
       21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-16.1.3-android-arm64.so 
