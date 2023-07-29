@@ -69,7 +69,13 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
     target_smali = None
 
     target_relative_path = main_activity.replace(".", os.sep)
-    target_smali = decompiled_path.joinpath("smali", target_relative_path + ".smali")
+
+    for directory in decompiled_path.iterdir():
+        if directory.is_dir() and directory.name.startswith("smali"):
+            target_smali = directory.joinpath(target_relative_path + ".smali")
+            if target_smali.exists():
+                break
+
     if not target_smali or not target_smali.exists():
         raise FileNotFoundError(f"The target class file {target_smali} was not found.")
 
@@ -85,31 +91,37 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
         'Locating the onCreate method and injecting the loadLibrary code')
     idx = 0
     status = False
-    while idx != len(text):
-        line = text[idx].strip()
-        if line.startswith('.method') and "onCreate(" in line:
-            locals_line_bit = text[idx + 1].split(".locals ")
-            locals_variable_count = int(locals_line_bit[1])
-            locals_line_bit[1] = str(locals_variable_count + 1)
-            if load_library_name.startswith('lib'):
-                load_library_name = load_library_name[3:]
+    inject_methods = ["onCreate(", "<init>"]
 
-            new_locals_line = ".locals ".join(locals_line_bit)
-            text[idx + 1] = new_locals_line
+    for method_name in inject_methods:
+        while idx != len(text):
+            line = text[idx].strip()
+            if line.startswith('.method') and f"{method_name}" in line:
+                locals_line_bit = text[idx + 1].split(".locals ")
+                locals_variable_count = int(locals_line_bit[1])
+                locals_line_bit[1] = str(locals_variable_count + 1)
+                if load_library_name.startswith('lib'):
+                    load_library_name = load_library_name[3:]
 
-            load_str = f'    const-string v{locals_variable_count}, "{load_library_name}"'
-            load_library = f'    invoke-static {{v{locals_variable_count}}}, \
-                Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V'
-            text.insert(idx + 2, load_library)
-            text.insert(idx + 2, load_str)
-            status = True
+                new_locals_line = ".locals ".join(locals_line_bit)
+                text[idx + 1] = new_locals_line
+
+                load_str = f'    const-string v{locals_variable_count}, "{load_library_name}"'
+                load_library = f'    invoke-static {{v{locals_variable_count}}}, \
+                    Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V'
+                text.insert(idx + 2, load_library)
+                text.insert(idx + 2, load_str)
+                status = True
+                break
+            idx += 1
+
+        if status:
             break
-        idx += 1
 
     if not status:
         issue_url = 'https://github.com/ksg97031/frida-gadget/issues'
         logger.error(
-            "Cannot find the onCreate method in the main activity.")
+            "\nCannot find the appropriate position in the main activity.")
         logger.error(
             "Please report the issue at %s with the following information:", issue_url)
         logger.error("APK Name: <Your APK Name>")
