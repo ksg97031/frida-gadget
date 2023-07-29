@@ -104,8 +104,8 @@ Similar Projects
    :target: https://coveralls.io/github/ksg97031/frida-gadget
 .. |Branch-Coverage-Status| image:: https://codecov.io/gh/ksg97031/frida-gadget/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/ksg97031/frida-gadget
-.. |Codacy-Grade| image:: https://app.codacy.com/project/badge/Grade/3f965571598f44549c7818f29cdcf177
-   :target: https://www.codacy.com/gh/ksg97031/frida-gadget/dashboard
+.. |Codacy-Grade| image:: https://app.codacy.com/project/badge/Grade/a1e2ef93fd3842e4b9e92971c135ed3f
+   :target: https://app.codacy.com/gh/ksg97031/frida-gadget/dashboard
 .. |CII Best Practices| image:: https://bestpractices.coreinfrastructure.org/projects/3264/badge
    :target: https://bestpractices.coreinfrastructure.org/projects/3264
 .. |GitHub-Status| image:: https://img.shields.io/github/tag/ksg97031/frida-gadget.svg?maxAge=86400&logo=github&logoColor=white
