@@ -105,6 +105,7 @@ class FridaGithub:
         if Path(gadget_fullpath).exists():
             return gadget_fullpath
 
+        Path(gadget_fullpath).parent.mkdir(parents=True, exist_ok=True)
         xz_gadget_fullpath = gadget_fullpath + ".xz"
         self.download_asset(url, xz_gadget_fullpath)
 
