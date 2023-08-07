@@ -51,6 +51,7 @@ Usage
          --arch TEXT       Support [arm, arm64, x86, x86_64]
          --skip-decompile
          --skip-recompile
+         --use-aapt2       Can be required for newer Android apps
          --help            Show this message and exit.
 
 Example
