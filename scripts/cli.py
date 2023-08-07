@@ -206,8 +206,9 @@ def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str):
 @click.option('--arch', default="arm64", help='Support [arm, arm64, x86, x86_64]')
 @click.option('--skip-decompile', is_flag=True)
 @click.option('--skip-recompile', is_flag=True)
+@click.option('--use-aapt2', is_flag=True, help="Can be required for newer Android apps")
 @click.argument('apk_path', type=click.Path(exists=True), required=True)
-def run(apk_path: str, skip_decompile:bool, skip_recompile:bool, arch: str):
+def run(apk_path: str, skip_decompile:bool, skip_recompile:bool, use_aapt2:bool, arch: str):
     """Patch an APK with the Frida gadget library
 
     Args:
@@ -248,7 +249,10 @@ def run(apk_path: str, skip_decompile:bool, skip_recompile:bool, arch: str):
 
     # Rebuild with apktool, print apk_path if process is success
     if not skip_recompile:
-        run_apktool('b', str(decompiled_path.resolve()))
+        if use_aapt2:
+            run_apktool('b --use-aapt2', str(decompiled_path.resolve()))
+        else:
+            run_apktool('b', str(decompiled_path.resolve()))
         apk_path = decompiled_path.joinpath('dist', apk_path.name)
         logger.info('Success: %s', str(apk_path.resolve()))
 
