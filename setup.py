@@ -1,3 +1,4 @@
+import os
 import sys
 import setuptools
 
@@ -5,6 +6,11 @@ if sys.version_info < (3, 6):
     print("Unfortunately, your python version is not supported!\n" +
           "Please upgrade at least to Python 3.6!")
     sys.exit(1)
+
+about = {}
+here = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(here, "scripts", "__version__.py"), "r", encoding="utf-8") as f:
+    exec(f.read(), about)
 
 with open("README.rst", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -20,16 +26,16 @@ requires = [
 ]
 
 setuptools.setup(
-    name="frida-gadget",
+    name=about["__title__"],
     python_requires='>=3.6',
-    version="1.2.0",
-    author="ksg97031",
-    author_email="ksg97031@gmail.com",
-    description="Frida gadget into an APK",
+    version=about["__version__"],
+    author=about["__author__"],
+    author_email=about["__author_email__"],
+    description=about["__description__"],
     install_requires=requires,
     long_description=long_description,
     long_description_content_type="text/x-rst",
-    url="https://github.com/ksg97031/frida-gadget",
+    url=about["__url__"],
     packages=setuptools.find_packages(),
     package_data={
         'scripts': [

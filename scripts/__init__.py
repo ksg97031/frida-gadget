@@ -20,4 +20,3 @@ def import_or_install(package):
 
 import_or_install('frida')  # Install missing packages
 INSTALLED_FRIDA_VERSION: str = __import__('frida').__version__  # Get installed frida version
-logger.info("Auto-detected frida version: %s", INSTALLED_FRIDA_VERSION)
