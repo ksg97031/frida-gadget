@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 from androguard.core.bytecodes.apk import APK
 from .logger import logger
+from .__version__ import __version__
 from .frida_github import FridaGithub
 from . import INSTALLED_FRIDA_VERSION
 
@@ -48,6 +49,7 @@ def download_gadget(arch: str):
     Args:
         arch (str): architecture of the device
     """
+    logger.debug("Auto-detected frida version: %s", INSTALLED_FRIDA_VERSION)
     frida_github = FridaGithub(INSTALLED_FRIDA_VERSION)
     assets = frida_github.get_assets()
     file = f'frida-gadget-{INSTALLED_FRIDA_VERSION}-android-{arch}.so.xz'
@@ -63,13 +65,14 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
     """Inject loadlibary code to main activity
 
     Args:
-        text (str): smali code of the main activity
+        decompiled_path (str): decomplied path of apk file
+        main_activity (str): main activity of apk file
+        load_library_name (str): name of load library
     """
     logger.debug('Searching for the main activity in the smali files')
     target_smali = None
 
     target_relative_path = main_activity.replace(".", os.sep)
-
     for directory in decompiled_path.iterdir():
         if directory.is_dir() and directory.name.startswith("smali"):
             target_smali = directory.joinpath(target_relative_path + ".smali")
@@ -86,7 +89,6 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
         "invoke-virtual {v0, v1}, Ljava/lang/Runtime;->exit(I)V", "")
     text = text.split("\n")
 
-
     logger.debug(
         'Locating the entrypoint method and injecting the loadLibrary code')
     status = False
@@ -101,15 +103,13 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
                 locals_line_bit[1] = str(locals_variable_count + 1)
                 if load_library_name.startswith('lib'):
                     load_library_name = load_library_name[3:]
-
-                new_locals_line = ".locals ".join(locals_line_bit)
-                text[idx + 1] = new_locals_line
-
-                load_str = f'    const-string v{locals_variable_count}, "{load_library_name}"'
-                load_library = f'    invoke-static {{v{locals_variable_count}}}, \
-                    Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V'
-                text.insert(idx + 2, load_library)
-                text.insert(idx + 2, load_str)
+                text[idx + 1] = ".locals ".join(locals_line_bit)
+                text.insert(idx + 2,
+                            f'    invoke-static {{v{locals_variable_count}}}, \
+                            Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V')
+                text.insert(idx + 2,
+                            f'    const-string v{locals_variable_count}, \
+                            "{load_library_name}"')
                 status = True
                 break
             idx += 1
@@ -118,11 +118,11 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
             break
 
     if not status:
-        issue_url = 'https://github.com/ksg97031/frida-gadget/issues'
         logger.error(
             "Cannot find the appropriate position in the main activity.")
         logger.error(
-            "Please report the issue at %s with the following information:", issue_url)
+            "Please report the issue at %s with the following information:", 
+            'https://github.com/ksg97031/frida-gadget/issues')
         logger.error("APK Name: <Your APK Name>")
         logger.error("APK Version: <Your APK Version>")
         logger.error("APKTOOL Version: <Your APKTOOL Version>")
@@ -200,24 +200,23 @@ def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str):
 
     logger.debug('Recompiling the new APK using apktool')
 
-
+def print_version(ctx, _, value):
+    """Print version and exit"""
+    if not value or ctx.resilient_parsing:
+        return
+    print(f"frida-gadget version {__version__}")
+    ctx.exit()
 
 @click.command()
-@click.option('--arch', default="arm64", help='Support [arm, arm64, x86, x86_64]')
-@click.option('--skip-decompile', is_flag=True)
-@click.option('--skip-recompile', is_flag=True)
-@click.option('--use-aapt2', is_flag=True, help="Can be required for newer Android apps")
+@click.option('--arch', default="arm64", help="Target architecture of the device.")
+@click.option('--use-aapt2', is_flag=True, help="Can be required for newer Android apps.")
+@click.option('--skip-decompile', is_flag=True, help="Will use existing decompiled directory.")
+@click.option('--skip-recompile', is_flag=True, help="Skip manual recompilation if desired.")
+@click.option('--version', is_flag=True, callback=print_version,
+              expose_value=False, is_eager=True, help="Show version and exit.")
 @click.argument('apk_path', type=click.Path(exists=True), required=True)
-def run(apk_path: str, skip_decompile:bool, skip_recompile:bool, use_aapt2:bool, arch: str):
-    """Patch an APK with the Frida gadget library
-
-    Args:
-        apk_path (str): Path of the target APK file
-        arch (str): Target architecture of the device
-
-    Outputs:
-        Injected APK file
-    """
+def run(apk_path: str, arch: str, use_aapt2:bool, skip_decompile:bool, skip_recompile:bool):
+    """Patch an APK with the Frida gadget library"""
     apk_path = Path(apk_path)
 
     logger.info("APK: '%s'", apk_path)
@@ -233,7 +232,6 @@ def run(apk_path: str, skip_decompile:bool, skip_recompile:bool, use_aapt2:bool,
         sys.exit(-1)
 
     # Make temp directory for decompile
-   
     decompiled_path = TEMP_DIR.joinpath(str(apk_path.resolve())[:-4])
     if not skip_decompile:
         logger.debug("Decompiling the target APK using apktool")
@@ -243,6 +241,10 @@ def run(apk_path: str, skip_decompile:bool, skip_recompile:bool, use_aapt2:bool,
 
         # APK decompile with apktool
         run_apktool(['d', '-o', str(decompiled_path.resolve()), '-f'], str(apk_path.resolve()))
+    else:
+        if not decompiled_path.exists():
+            logger.error("Decompiled directory not found: %s", decompiled_path)
+            sys.exit(-1)
 
     # Process if decompile is success
     inject_gadget_into_apk(apk_path, arch, decompiled_path)
