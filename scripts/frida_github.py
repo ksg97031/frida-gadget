@@ -102,15 +102,19 @@ class FridaGithub:
         """
 
         assert gadget_fullpath.endswith('.so')
-        if Path(gadget_fullpath).exists():
+        gadget_path = Path(gadget_fullpath)
+        download_directory = gadget_path.parent
+        if gadget_path.exists():
             return gadget_fullpath
 
-        Path(gadget_fullpath).parent.mkdir(parents=True, exist_ok=True)
+        if not download_directory.exists():
+            download_directory.mkdir(parents=True, exist_ok=True)
+
         xz_gadget_fullpath = gadget_fullpath + ".xz"
         self.download_asset(url, xz_gadget_fullpath)
-
         with lzma.open(xz_gadget_fullpath, "rb") as lzma_file:
             decompressed_data = lzma_file.read()
+
         with open(gadget_fullpath, "wb") as gadget_file:
             gadget_file.write(decompressed_data)
 

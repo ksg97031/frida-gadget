@@ -23,7 +23,7 @@ if not APKTOOL:
     raise FileNotFoundError(
         "Please download the 'apktool' and set it to your PATH environment.")
 
-def run_apktool(option, apk_path: str):
+def run_apktool(option: list, apk_path: str):
     """Run apktool with option
 
     Args:
@@ -31,16 +31,30 @@ def run_apktool(option, apk_path: str):
         apk_path (str): path of apk file
 
     """
-    if isinstance(option, list):
-        cmd = [APKTOOL] + option + [apk_path]
-    else:
-        cmd = [APKTOOL, option, apk_path]
 
     pipe = subprocess.PIPE
-    with subprocess.Popen(cmd, stdin=pipe, stdout=pipe, stderr=pipe) as process:
-        _, stderr = process.communicate(b"\n")
+    cmd = [APKTOOL] + option + [apk_path]
+    with subprocess.Popen(cmd, stdin=pipe, stdout=sys.stdout, stderr=sys.stderr) as process:
+        process.communicate(b"\n")
         if process.returncode != 0:
-            raise subprocess.CalledProcessError(process.returncode, cmd, stderr)
+            if 'b' in option:
+                recommend_options = []
+                if not '--use-aapt2' in option:
+                    recommend_options += ['--use-aapt2']
+                if not '--no-res' in option:
+                    recommend_options += ['--no-res']
+
+                if recommend_options:
+                    logger.error("Recommend using the '%s' options.", ", ".join(recommend_options))
+                else:
+                    logger.error("Try recompile the APK manually using the "
+                                 "'--skip-recompile' option.")
+
+            if 'd' in option:
+                logger.error("Try decompile the APK manually using the '--skip-decompile' option.")
+
+            raise subprocess.CalledProcessError(process.returncode, cmd,
+                                                sys.stdout, sys.stderr)
         return True
 
 def download_gadget(arch: str):
@@ -49,13 +63,15 @@ def download_gadget(arch: str):
     Args:
         arch (str): architecture of the device
     """
-    logger.debug("Auto-detected frida version: %s", INSTALLED_FRIDA_VERSION)
+    logger.debug("Auto-detected your frida version: %s", INSTALLED_FRIDA_VERSION)
     frida_github = FridaGithub(INSTALLED_FRIDA_VERSION)
     assets = frida_github.get_assets()
     file = f'frida-gadget-{INSTALLED_FRIDA_VERSION}-android-{arch}.so.xz'
     for asset in assets:
         if asset['name'] == file:
-            logger.debug("Downloading the frida gadget library for %s", arch)
+            logger.debug("Downloading the frida gadget library(%s) for %s",
+                         INSTALLED_FRIDA_VERSION,
+                         arch)
             so_gadget_path = str(FILE_DIR.joinpath(file[:-3]))
             return frida_github.download_gadget_so(asset['browser_download_url'], so_gadget_path)
 
@@ -105,11 +121,11 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
                     load_library_name = load_library_name[3:]
                 text[idx + 1] = ".locals ".join(locals_line_bit)
                 text.insert(idx + 2,
-                            f'    invoke-static {{v{locals_variable_count}}}, \
-                            Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V')
+                            f"    invoke-static {{v{locals_variable_count}}}, "
+                            "Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V")
                 text.insert(idx + 2,
-                            f'    const-string v{locals_variable_count}, \
-                            "{load_library_name}"')
+                            f"    const-string v{locals_variable_count}, "
+                            f"\"{load_library_name}\"")
                 status = True
                 break
             idx += 1
@@ -198,8 +214,6 @@ def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str):
         lib_library_name = 'lib' + gadget_name
     shutil.copy(gadget_path, lib.joinpath(lib_library_name))
 
-    logger.debug('Recompiling the new APK using apktool')
-
 def print_version(ctx, _, value):
     """Print version and exit"""
     if not value or ctx.resilient_parsing:
@@ -207,15 +221,18 @@ def print_version(ctx, _, value):
     print(f"frida-gadget version {__version__}")
     ctx.exit()
 
+# pylint: disable=too-many-arguments
 @click.command()
 @click.option('--arch', default="arm64", help="Target architecture of the device.")
-@click.option('--use-aapt2', is_flag=True, help="Can be required for newer Android apps.")
-@click.option('--skip-decompile', is_flag=True, help="Will use existing decompiled directory.")
-@click.option('--skip-recompile', is_flag=True, help="Skip manual recompilation if desired.")
+@click.option('--use-aapt2', is_flag=True, help="Use aapt2 instead of aapt.")
+@click.option('--no-res', is_flag=True, help="Do not decode resources.")
+@click.option('--skip-decompile', is_flag=True, help="Skip decompilation if desired.")
+@click.option('--skip-recompile', is_flag=True, help="Skip recompilation if desired.")
 @click.option('--version', is_flag=True, callback=print_version,
               expose_value=False, is_eager=True, help="Show version and exit.")
 @click.argument('apk_path', type=click.Path(exists=True), required=True)
-def run(apk_path: str, arch: str, use_aapt2:bool, skip_decompile:bool, skip_recompile:bool):
+def run(apk_path: str, arch: str, use_aapt2:bool, no_res:bool,
+        skip_decompile:bool, skip_recompile:bool):
     """Patch an APK with the Frida gadget library"""
     apk_path = Path(apk_path)
 
@@ -234,7 +251,7 @@ def run(apk_path: str, arch: str, use_aapt2:bool, skip_decompile:bool, skip_reco
     # Make temp directory for decompile
     decompiled_path = TEMP_DIR.joinpath(str(apk_path.resolve())[:-4])
     if not skip_decompile:
-        logger.debug("Decompiling the target APK using apktool")
+        logger.debug("Decompiling the target APK using apktool\n%s", decompiled_path)
         if decompiled_path.exists():
             shutil.rmtree(decompiled_path)
         decompiled_path.mkdir()
@@ -251,12 +268,20 @@ def run(apk_path: str, arch: str, use_aapt2:bool, skip_decompile:bool, skip_reco
 
     # Rebuild with apktool, print apk_path if process is success
     if not skip_recompile:
+        logger.debug('Recompiling the new APK using apktool\n%s', decompiled_path)
+
+        recompile_option = ['b']
         if use_aapt2:
-            run_apktool('b --use-aapt2', str(decompiled_path.resolve()))
-        else:
-            run_apktool('b', str(decompiled_path.resolve()))
+            recompile_option += ['--use-aapt2']
+        if no_res:
+            recompile_option += ['--no-res']
+
+        run_apktool(recompile_option, str(decompiled_path.resolve()))
         apk_path = decompiled_path.joinpath('dist', apk_path.name)
-        logger.info('Success: %s', str(apk_path.resolve()))
+        if not apk_path.exists():
+            logger.error("APK not found: %s", apk_path)
+        else:
+            logger.info("Success")
 
 
 if __name__ == '__main__':
