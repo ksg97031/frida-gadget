@@ -38,21 +38,18 @@ Usage
 .. code:: sh
 
     $ frida-gadget --help
-      Usage: frida-gadget [OPTIONS] APK_PATH
+      Usage: cli.py [OPTIONS] APK_PATH
 
-         Patch an APK with the Frida gadget library
-
-         Args:     apk_path (str): Path of the target APK file     
-                   arch     (str): Target architecture of the device
-
-         Outputs:  Injected APK file
-
+        Patch an APK with the Frida gadget library
+    
       Options:
-         --arch TEXT       Support [arm, arm64, x86, x86_64]
-         --skip-decompile
-         --skip-recompile
-         --use-aapt2       Can be required for newer Android apps
-         --help            Show this message and exit.
+        --arch TEXT       Target architecture of the device.
+        --use-aapt2       Use aapt2 instead of aapt.
+        --no-res          Do not decode resources.
+        --skip-decompile  Skip decompilation if desired.
+        --skip-recompile  Skip recompilation if desired.
+        --version         Show version and exit.
+        --help            Show this message and exit.
 
 Example
 ~~~~~~~
@@ -70,10 +67,13 @@ Example
       [DEBUG] Found the main activity at '[REDACTED]\frida-gadget\tests\demo-apk\handtrackinggpu\smali\com\google\mediapipe\apps\handtrackinggpu\MainActivity.smali'
       [DEBUG] Locating the onCreate method and injecting the loadLibrary code
       [DEBUG] Recompiling the new APK using apktool
-
-      [INFO] Success: [REDACTED]\demo-apk\handtrackinggpu\dist\handtrackinggpu.apk
+      ...
+      I: Building apk file...
+      I: Copying unknown files/dir...
+      I: Built apk into: [REDACTED]\demo-apk\handtrackinggpu\dist\handtrackinggpu.apk
+      [INFO] Success
       
-    $ unzip -l handtrackinggpu.apk | grep libfrida-gadget
+    $ unzip -l [REDACTED]\demo-apk\handtrackinggpu\dist\handtrackinggpu.apk | grep libfrida-gadget
       21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-16.1.3-android-arm64.so 
        
 loadLibrary code will be injected
