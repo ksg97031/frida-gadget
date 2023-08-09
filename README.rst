@@ -95,10 +95,10 @@ Easy to re-sign your app by ``apk-signer``
     $ adb install handtrackinggpu-signed.apk
    
    
-Similar Projects
+Contributing
 -----------------
-| https://github.com/sensepost/objection
-| https://github.com/NickstaDB/patch-apk
+.. image:: CONTRIBUTORS.svg
+   :target: ./CONTRIBUTORS.svg
 
 
 .. |Coverage-Status| image:: https://img.shields.io/coveralls/github/ksg97031/frida-gadget/master?logo=coveralls
