@@ -35,7 +35,7 @@ jobs:
       id: docker_build
       with:
         context: .
-        file: ./docker/Dockerfile
+        file: Dockerfile
         push: true
         tags: |
           ghcr.io/${{ github.repository_owner }}/frida-gadget:latest
