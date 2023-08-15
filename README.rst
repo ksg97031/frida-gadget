@@ -7,6 +7,7 @@ frida-gadget
 | ``frida-gadget`` is a tool that can be used to patch APKs in order to utilize the `Frida gadget <https://frida.re/docs/gadget/>`_.
 | This tool automates the process of downloading the Frida gadget library and injecting the loadlibrary code into the main activity.
 
+
 Installation
 ------------
 
@@ -15,7 +16,7 @@ Installation
 .. code:: sh
 
     pip install frida-gadget
-    
+
 Prerequirement
 ----------------
 
@@ -30,7 +31,18 @@ Prerequirement
    # Add Apktool to your PATH environment variable
    export PATH=$PATH:$HOME/.brew/bin 
 
-| Other Platforms: `Install Guide <https://ibotpeaches.github.io/Apktool/install/>`_
+| For other operating systems, you can refer to the `Install Guide <https://ibotpeaches.github.io/Apktool/install/>`_.
+
+Docker
+~~~~~~~
+| The -v flag is used to mount the current directory to the /workspace directory in the container.
+| The APK file should reside in the ``$pwd`` directory, or you can substitute $pwd with the directory path where the APK file is stored.
+| 
+
+.. code:: sh
+
+    docker pull ghcr.io/ksg97031/frida-gadget:latest
+    docker run -v $pwd:/workspace ghcr.io/ksg97031/frida-gadget handtrackinggpu.apk
 
 Usage
 ------------
@@ -51,8 +63,10 @@ Usage
         --version         Show version and exit.
         --help            Show this message and exit.
 
-Example
+How do I begin?
 ~~~~~~~
+| Simply provide the APK file.
+|
 .. code:: sh
 
     $ frida-gadget handtrackinggpu.apk --arch arm64
@@ -75,26 +89,23 @@ Example
       
     $ unzip -l [REDACTED]\demo-apk\handtrackinggpu\dist\handtrackinggpu.apk | grep libfrida-gadget
       21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-16.1.3-android-arm64.so 
-       
-loadLibrary code will be injected
-********************************************
 
+How to Identify?
+~~~~~~~
+| Observe the main activity; the injected loadLibrary code will be visible.
+| 
 .. image:: https://github.com/ksg97031/frida-gadget/blob/trunk/images/decompile.png
    :width: 600
 
-Easy to re-sign your app by ``apk-signer``
-********************************************
-
+Helpful Hint
+~~~~~~~
+| Quickly re-sign your application with the ``apk-signer`` tool.
+| 
 .. code:: sh
 
     $ apk-signer handtrackinggpu.apk
-      [Warning] Signing with default keystore.
-      [Warning] Please pass --key_path, --key_alias, --key_pass, --ks_pass parameter, if you want to use your keystore
-      handtrackinggpu-signed.apk
-     
-    $ adb install handtrackinggpu-signed.apk
-   
-   
+
+| 
 Contributing
 -----------------
 .. image:: CONTRIBUTORS.svg
