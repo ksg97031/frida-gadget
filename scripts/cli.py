@@ -6,7 +6,7 @@ import subprocess
 from shutil import which
 from pathlib import Path
 import click
-from androguard.core.bytecodes.apk import APK
+from androguard.core.apk import APK 
 from .logger import logger
 from .__version__ import __version__
 from .frida_github import FridaGithub
