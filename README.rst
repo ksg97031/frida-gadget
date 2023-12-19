@@ -63,9 +63,10 @@ Usage
         --help            Show this message and exit.
 
 How do I begin?
-~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 | Simply provide the APK file.
 |
+
 .. code:: sh
 
     $ frida-gadget handtrackinggpu.apk --arch arm64
@@ -90,21 +91,22 @@ How do I begin?
       21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-16.1.3-android-arm64.so 
 
 How to Identify?
-~~~~~~~
+~~~~~~~~~~~~~~~~~~
 | Observe the main activity; the injected loadLibrary code will be visible.
-| 
+|
+
 .. image:: https://github.com/ksg97031/frida-gadget/blob/trunk/images/decompile.png
    :width: 600
 
 Helpful Hint
-~~~~~~~
+~~~~~~~~~~~~~~~~~~
 | Quickly re-sign your application with the ``apk-signer`` tool.
-| 
+|
+
 .. code:: sh
 
     $ apk-signer handtrackinggpu.apk
 
-| 
 Contributing
 -----------------
 .. image:: CONTRIBUTORS.svg
