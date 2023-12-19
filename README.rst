@@ -15,7 +15,7 @@ Installation
 
 .. code:: sh
 
-    pip install frida-gadget
+    pip install frida-gadget --upgrade
 
 Prerequirement
 ----------------
