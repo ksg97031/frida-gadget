@@ -45,7 +45,8 @@ def run_apktool(option: list, apk_path: str):
                     recommend_options += ['--no-res']
 
                 if recommend_options:
-                    logger.error("Recommend using the '%s' options.", ", ".join(recommend_options))
+                    logger.error("It seems like you're facing issues with Apktool.\n"
+                                 "I would suggest considering the '%s' options or opting for a hands-on approach by using the '--skip-recompile' option.", ", ".join(recommend_options))
                 else:
                     logger.error("Try recompile the APK manually using the "
                                  "'--skip-recompile' option.")
@@ -115,7 +116,7 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
             line = text[idx].strip()
             if line.startswith('.method') and entrypoint in line:
                 locals_line_bit = text[idx + 1].split(".locals ")
-                locals_variable_count = int(locals_line_bit[1])
+                locals_variable_count = min(int(locals_line_bit[1]), 15)
                 locals_line_bit[1] = str(locals_variable_count + 1)
                 if load_library_name.startswith('lib'):
                     load_library_name = load_library_name[3:]
