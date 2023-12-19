@@ -1,5 +1,5 @@
 click
-androguard
+androguard >= 4.0.0
 apk-signer
 pytest
 colorlog
