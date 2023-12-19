@@ -17,7 +17,7 @@ with open("README.rst", "r", encoding="utf-8") as fh:
 
 requires = [
     'click',
-    'androguard',
+    'androguard >= 4.0.0',
     'apk-signer',
     'pytest',
     'colorlog',
