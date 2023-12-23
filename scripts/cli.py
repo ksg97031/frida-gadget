@@ -109,12 +109,16 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
     logger.debug(
         'Locating the entrypoint method and injecting the loadLibrary code')
     status = False
-    entrypoints = ["onCreate(", "<init>"]
+    entrypoints = [" onCreate(", "<init>"]
     for entrypoint in entrypoints:
         idx = 0
         while idx != len(text):
             line = text[idx].strip()
             if line.startswith('.method') and entrypoint in line:
+                if ".locals" not in text[idx + 1]:
+                    idx += 1
+                    continue
+
                 locals_line_bit = text[idx + 1].split(".locals ")
                 locals_variable_count = min(int(locals_line_bit[1]), 15)
                 locals_line_bit[1] = str(locals_variable_count + 1)
@@ -252,7 +256,7 @@ def run(apk_path: str, arch: str, use_aapt2:bool, no_res:bool,
     # Make temp directory for decompile
     decompiled_path = TEMP_DIR.joinpath(str(apk_path.resolve())[:-4])
     if not skip_decompile:
-        logger.debug("Decompiling the target APK using apktool\n%s", decompiled_path)
+        logger.debug('Decompiling the target APK using apktool\n"%s"', decompiled_path)
         if decompiled_path.exists():
             shutil.rmtree(decompiled_path)
         decompiled_path.mkdir()
@@ -269,7 +273,7 @@ def run(apk_path: str, arch: str, use_aapt2:bool, no_res:bool,
 
     # Rebuild with apktool, print apk_path if process is success
     if not skip_recompile:
-        logger.debug('Recompiling the new APK using apktool\n%s', decompiled_path)
+        logger.debug('Recompiling the new APK using apktool\n"%s"', decompiled_path)
 
         recompile_option = ['b']
         if use_aapt2:
