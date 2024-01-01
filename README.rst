@@ -1,10 +1,10 @@
 frida-gadget
 ============
 
-|Codacy-Grade| |Docker| |Libraries-Rank|
+|Codacy-Grade| |Docker| |LICENCE|
 
 
-| ``frida-gadget`` is a tool that can be used to patch APKs in order to utilize the `Frida gadget <https://frida.re/docs/gadget/>`_.
+| ``frida-gadget`` is a tool that can be used to patch APKs in order to utilize the `Frida Gadget <https://frida.re/docs/gadget/>`_.
 | This tool automates the process of downloading the Frida gadget library and injecting the loadlibrary code into the main activity.
 
 
@@ -147,8 +147,6 @@ Contributing
    :target: https://anaconda.org/conda-forge/frida-gadget
 .. |Docker| image:: https://img.shields.io/badge/docker-pull-blue.svg?logo=docker&logoColor=white
    :target: https://github.com/ksg97031/frida-gadget/pkgs/container/frida-gadget
-.. |Libraries-Rank| image:: https://img.shields.io/librariesio/sourcerank/pypi/frida-gadget.svg?logo=koding&logoColor=white
-   :target: https://libraries.io/pypi/frida-gadget
 .. |Libraries-Dependents| image:: https://img.shields.io/librariesio/dependent-repos/pypi/frida-gadget.svg?logo=koding&logoColor=white
     :target: https://github.com/ksg97031/frida-gadget/network/dependents
 .. |OpenHub-Status| image:: https://www.openhub.net/p/frida-gadget/widgets/project_thin_badge?format=gif
