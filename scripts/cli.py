@@ -6,7 +6,7 @@ import subprocess
 from shutil import which
 from pathlib import Path
 import click
-from androguard.core.apk import APK 
+from androguard.core.apk import APK
 from .logger import logger
 from .__version__ import __version__
 from .frida_github import FridaGithub
@@ -39,9 +39,9 @@ def run_apktool(option: list, apk_path: str):
         if process.returncode != 0:
             if 'b' in option:
                 recommend_options = []
-                if not '--use-aapt2' in option:
+                if '--use-aapt2' not in option:
                     recommend_options += ['--use-aapt2']
-                if not '--no-res' in option:
+                if '--no-res' not in option:
                     recommend_options += ['--no-res']
 
                 if recommend_options:
