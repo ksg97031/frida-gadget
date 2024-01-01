@@ -46,7 +46,8 @@ def run_apktool(option: list, apk_path: str):
 
                 if recommend_options:
                     logger.error("It seems like you're facing issues with Apktool.\n"
-                                 "I would suggest considering the '%s' options or opting for a hands-on approach by using the '--skip-recompile' option.", ", ".join(recommend_options))
+                                 "I would suggest considering the '%s' options or opting for a hands-on approach "
+                                 "by using the '--skip-recompile' option.", ", ".join(recommend_options))
                 else:
                     logger.error("Try recompile the APK manually using the "
                                  "'--skip-recompile' option.")
