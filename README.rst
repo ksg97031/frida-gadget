@@ -100,12 +100,8 @@ How to Identify?
 
 Helpful Hint
 ~~~~~~~~~~~~~~~~~~
-| Quickly re-sign your application with the ``apk-signer`` tool.
+| Quickly re-sign your application with the `uber-apk-signer <https://github.com/patrickfav/uber-apk-signer>`_.
 |
-
-.. code:: sh
-
-    $ apk-signer handtrackinggpu.apk
 
 Contributing
 -----------------
