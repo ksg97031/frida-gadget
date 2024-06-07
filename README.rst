@@ -35,9 +35,8 @@ Prerequirement
 
 Docker
 ~~~~~~~
-| The `-v` flag is used to mount the current directory to the `/workspace/mount` directory in the container.
-| The APK file should be located in the current directory (`$PWD`), or you can replace `$PWD` with the path to the directory where the APK file is stored.
-| Ensure to specify the correct path to the `your.apk` file after `mount/` in the command.
+| The ``-v`` flag is used to bind mount the current directory to the ``/workspace/mount`` directory inside the container. 
+| Ensure that the your ``APK`` file is located in the current directory (``$PWD``), or replace ``$PWD`` with the path to the directory where the APK file is stored. 
 |
 
 .. code:: sh
