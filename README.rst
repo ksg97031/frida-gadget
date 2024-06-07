@@ -35,13 +35,14 @@ Prerequirement
 
 Docker
 ~~~~~~~
-| The -v flag is used to mount the current directory to the /workspace directory in the container.
-| The APK file should reside in the ``$PWD`` directory, or you can substitute $pwd with the directory path where the APK file is stored.
-| 
+| The `-v` flag is used to mount the current directory to the `/workspace/mount` directory in the container.
+| The APK file should be located in the current directory (`$PWD`), or you can replace `$PWD` with the path to the directory where the APK file is stored.
+| Ensure to specify the correct path to the `your.apk` file after `mount/` in the command.
+|
 
 .. code:: sh
 
-    docker run -v $PWD/:/workspace/mount ksg97031/frida-gadget mount/handtrackinggpu.apk
+    docker run -v $PWD/:/workspace/mount ksg97031/frida-gadget mount/your.apk
 
 Usage
 ------------
