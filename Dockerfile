@@ -2,7 +2,7 @@ FROM adoptopenjdk:latest
 LABEL MAINTAINER ksg97031 (ksg97031@gmail.com)
 
 # Install dependencies
-RUN apt update && apt install curl python3 python3-pip -y
+RUN apt update && apt upgrade -y && apt install curl python3 python3-pip -y
 RUN alias python=python3
 RUN alias pip=pip3
 # Install Frida
