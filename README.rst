@@ -36,12 +36,17 @@ Prerequirement
 Docker
 ~~~~~~~
 | The ``-v`` flag is used to bind mount the current directory to the ``/workspace/mount`` directory inside the container. 
-| Ensure that the your ``APK`` file is located in the current directory (``$PWD``), or replace ``$PWD`` with the path to the directory where the APK file is stored. 
+| Ensure that your ``APK`` file is located in the current directory, or replace ``$APK_DIRECTORY`` with the path to the directory where the APK file is stored.
 |
 
 .. code:: sh
 
-    docker run -v $PWD/:/workspace/mount ksg97031/frida-gadget mount/your.apk
+    APK_DIRECTORY=$PWD
+    APK_FILENAME=example.apk
+    docker run -v $APK_DIRECTORY/:/workspace/mount ksg97031/frida-gadget mount/$APK_FILENAME --arch arm64
+
+    ...
+    # New apk is in the $APK_DIRECTORY/example/dist/example.apk
 
 Usage
 ------------
@@ -54,7 +59,7 @@ Usage
         Patch an APK with the Frida gadget library
     
       Options:
-        --arch TEXT       Target architecture of the device.
+        --arch TEXT       Target architecture of the device. (options: arm64, x86_64, arm, x86)
         --use-aapt2       Use aapt2 instead of aapt.
         --no-res          Do not decode resources.
         --skip-decompile  Skip decompilation if desired.
@@ -64,7 +69,7 @@ Usage
 
 How do I begin?
 ~~~~~~~~~~~~~~~~~~~~~~
-| Simply provide the APK file.
+| Simply provide the APK file with the target architecture.
 |
 
 .. code:: sh
@@ -90,6 +95,21 @@ How do I begin?
     $ unzip -l [REDACTED]\demo-apk\handtrackinggpu\dist\handtrackinggpu.apk | grep libfrida-gadget
       21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-16.1.3-android-arm64.so 
 
+How to know device architecture?
+~~~~~~~~~~~~~~~~~~~~~~
+| Connect your device and run the following command:
+|
+.. code:: sh
+
+    adb shell getprop ro.product.cpu.abi
+
+| This command will output the architecture of your device, such as ``arm64-v8a``, ``armeabi-v7a``, ``x86``, or ``x86_64``.
+|
+| - Most modern Android emulators use the ``x86_64`` architecture.
+| - Newer high-end devices typically use ``arm64-v8a``.
+| - Older or lower-end devices might use ``armeabi-v7a``.
+| - Some specific emulators or devices may still use ``x86``.
+
 How to Identify?
 ~~~~~~~~~~~~~~~~~~
 | Observe the main activity; the injected loadLibrary code will be visible.
@@ -98,9 +118,10 @@ How to Identify?
 .. image:: https://github.com/ksg97031/frida-gadget/blob/trunk/images/decompile.png
    :width: 600
 
-Helpful Hint
+Resigning the APK
 ~~~~~~~~~~~~~~~~~~
-| Quickly re-sign your application with the `uber-apk-signer <https://github.com/patrickfav/uber-apk-signer>`_.
+| After modifying the APK, you need to re-sign it. 
+| You can quickly re-sign your application with the `uber-apk-signer <https://github.com/patrickfav/uber-apk-signer>`_.
 |
 
 Contributing
