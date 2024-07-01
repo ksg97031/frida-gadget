@@ -121,16 +121,13 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
                     continue
 
                 locals_line_bit = text[idx + 1].split(".locals ")
-                locals_variable_count = min(int(locals_line_bit[1]), 15)
-                locals_line_bit[1] = str(locals_variable_count + 1)
                 if load_library_name.startswith('lib'):
                     load_library_name = load_library_name[3:]
-                text[idx + 1] = ".locals ".join(locals_line_bit)
                 text.insert(idx + 2,
-                            f"    invoke-static {{v{locals_variable_count}}}, "
+                            "    invoke-static {v0}, "
                             "Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V")
                 text.insert(idx + 2,
-                            f"    const-string v{locals_variable_count}, "
+                            f"    const-string v0, "
                             f"\"{load_library_name}\"")
                 status = True
                 break
