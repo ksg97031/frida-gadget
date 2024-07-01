@@ -96,9 +96,10 @@ How do I begin?
       21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-16.1.3-android-arm64.so 
 
 How to know device architecture?
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 | Connect your device and run the following command:
 |
+
 .. code:: sh
 
     adb shell getprop ro.product.cpu.abi
