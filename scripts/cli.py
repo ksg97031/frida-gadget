@@ -120,7 +120,6 @@ def insert_loadlibary(decompiled_path, main_activity, load_library_name):
                     idx += 1
                     continue
 
-                locals_line_bit = text[idx + 1].split(".locals ")
                 if load_library_name.startswith('lib'):
                     load_library_name = load_library_name[3:]
                 text.insert(idx + 2,
