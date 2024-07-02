@@ -176,7 +176,7 @@ def modify_manifest(decompiled_path):
                             ':extractNativeLibs="true"')
     android_manifest.write_text(txt, encoding="utf-8")
 
-def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str):
+def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str, main_activity:str=None):
     """Inject frida gadget into an APK
 
     Args:
@@ -191,7 +191,19 @@ def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str):
     apk = APK(apk_path)
     gadget_path = download_gadget(arch) # Download gadget library
     gadget_name = Path(gadget_path).name
-    main_activity = apk.get_main_activity()
+    if not main_activity:
+        main_activity = apk.get_main_activity()
+
+    if not main_activity:
+        if len(apk.get_activities()) == 1:
+            logger.warn("The main activity was not found.\n"
+                        "Using the first activity from the manifest file.")
+            main_activity = apk.get_activities()[0]
+        else:
+            logger.error("The main activity was not found.\n"
+                        "Please specify the main activity using the --main-activity option.\n"
+                        "Select the activity from %s", apk.get_activities())
+            sys.exit(-1)
     # Apply permission to android manifest
     modify_manifest(decompiled_path)
 
@@ -227,6 +239,7 @@ def print_version(ctx, _, value):
 # pylint: disable=too-many-arguments
 @click.command()
 @click.option('--arch', default="arm64", help="Target architecture of the device.")
+@click.option('--main-activity', default=None, help="Specify the main activity.")
 @click.option('--use-aapt2', is_flag=True, help="Use aapt2 instead of aapt.")
 @click.option('--no-res', is_flag=True, help="Do not decode resources.")
 @click.option('--skip-decompile', is_flag=True, help="Skip decompilation if desired.")
@@ -234,7 +247,7 @@ def print_version(ctx, _, value):
 @click.option('--version', is_flag=True, callback=print_version,
               expose_value=False, is_eager=True, help="Show version and exit.")
 @click.argument('apk_path', type=click.Path(exists=True), required=True)
-def run(apk_path: str, arch: str, use_aapt2:bool, no_res:bool,
+def run(apk_path: str, arch: str, main_activity: str, use_aapt2:bool, no_res:bool,
         skip_decompile:bool, skip_recompile:bool):
     """Patch an APK with the Frida gadget library"""
     apk_path = Path(apk_path)
@@ -267,7 +280,7 @@ def run(apk_path: str, arch: str, use_aapt2:bool, no_res:bool,
             sys.exit(-1)
 
     # Process if decompile is success
-    inject_gadget_into_apk(apk_path, arch, decompiled_path)
+    inject_gadget_into_apk(apk_path, arch, decompiled_path, main_activity)
 
     # Rebuild with apktool, print apk_path if process is success
     if not skip_recompile:
