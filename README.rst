@@ -59,13 +59,14 @@ Usage
         Patch an APK with the Frida gadget library
     
       Options:
-        --arch TEXT       Target architecture of the device. (options: arm64, x86_64, arm, x86)
-        --use-aapt2       Use aapt2 instead of aapt.
-        --no-res          Do not decode resources.
-        --skip-decompile  Skip decompilation if desired.
-        --skip-recompile  Skip recompilation if desired.
-        --version         Show version and exit.
-        --help            Show this message and exit.
+        --arch TEXT           Target architecture of the device. (options: arm64, x86_64, arm, x86)
+        --main-activity TEXT  Specify the main activity
+        --use-aapt2           Use aapt2 instead of aapt.
+        --no-res              Do not decode resources.
+        --skip-decompile      Skip decompilation if desired.
+        --skip-recompile      Skip recompilation if desired.
+        --version             Show version and exit.
+        --help                Show this message and exit.
 
 How do I begin?
 ~~~~~~~~~~~~~~~~~~~~~~

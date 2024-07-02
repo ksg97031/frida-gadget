@@ -176,7 +176,7 @@ def modify_manifest(decompiled_path):
                             ':extractNativeLibs="true"')
     android_manifest.write_text(txt, encoding="utf-8")
 
-def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str, main_activity:str=None):
+def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str, main_activity:str = None):
     """Inject frida gadget into an APK
 
     Args:
