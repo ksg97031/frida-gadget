@@ -10,6 +10,7 @@ from androguard.core.apk import APK
 from .logger import logger
 from .__version__ import __version__
 from .frida_github import FridaGithub
+from .uber_apk_signer_github import UberApkSignerGithub
 from . import INSTALLED_FRIDA_VERSION
 
 
@@ -76,6 +77,21 @@ def download_gadget(arch: str):
                          arch)
             so_gadget_path = str(FILE_DIR.joinpath(file[:-3]))
             return frida_github.download_gadget_so(asset['browser_download_url'], so_gadget_path)
+
+    raise FileNotFoundError(f"'{file}' not found in the github releases")
+
+def download_signer():
+    """Download the Uber Apk Signer
+    """
+    signer_github = UberApkSignerGithub()
+    assets = signer_github.get_assets()
+    file = f'uber-apk-signer-{signer_github.signer_version}.jar'
+    for asset in assets:
+        if asset['name'] == file:
+            logger.debug("Downloading the uber-apk-signer(%s) ",
+                         signer_github.signer_version)
+            signer_path = str(FILE_DIR.joinpath(file))
+            return signer_github.download_signer_jar(asset['browser_download_url'], signer_path)
 
     raise FileNotFoundError(f"'{file}' not found in the github releases")
 
@@ -228,6 +244,27 @@ def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str, main_act
         lib_library_name = 'lib' + gadget_name
     shutil.copy(gadget_path, lib.joinpath(lib_library_name))
 
+def sign_apk(apk_path:str):
+    """Run uber apk signer with option
+
+    Args:
+        apk_path (str): path of apk file
+
+    """
+    signer_path = download_signer() # Download apk signer
+
+    pipe = subprocess.PIPE
+    cmd = ['java', '-jar', signer_path, '--apks', apk_path]
+    with subprocess.Popen(cmd, stdin=pipe, stdout=sys.stdout, stderr=sys.stderr) as process:
+        process.communicate(b"\n")
+        if process.returncode != 0:
+            logger.error("Signing failed.")
+
+            raise subprocess.CalledProcessError(process.returncode, cmd, sys.stdout, sys.stderr)
+        return True
+
+
+
 def print_version(ctx, _, value):
     """Print version and exit"""
     if not value or ctx.resilient_parsing:
@@ -241,12 +278,13 @@ def print_version(ctx, _, value):
 @click.option('--main-activity', default=None, help="Specify the main activity.")
 @click.option('--use-aapt2', is_flag=True, help="Use aapt2 instead of aapt.")
 @click.option('--no-res', is_flag=True, help="Do not decode resources.")
+@click.option('--sign', is_flag=True, help="Sign the apk")
 @click.option('--skip-decompile', is_flag=True, help="Skip decompilation if desired.")
 @click.option('--skip-recompile', is_flag=True, help="Skip recompilation if desired.")
 @click.option('--version', is_flag=True, callback=print_version,
               expose_value=False, is_eager=True, help="Show version and exit.")
 @click.argument('apk_path', type=click.Path(exists=True), required=True)
-def run(apk_path: str, arch: str, main_activity: str, use_aapt2:bool, no_res:bool,
+def run(apk_path: str, arch: str, main_activity: str, use_aapt2:bool, no_res:bool, sign:bool,
         skip_decompile:bool, skip_recompile:bool):
     """Patch an APK with the Frida gadget library"""
     apk_path = Path(apk_path)
@@ -297,6 +335,10 @@ def run(apk_path: str, arch: str, main_activity: str, use_aapt2:bool, no_res:boo
             logger.error("APK not found: %s", apk_path)
         else:
             logger.info("Success")
+
+        if sign:
+            logger.debug('Signing the apk')
+            sign_apk(str(apk_path))
 
 
 if __name__ == '__main__':
