@@ -2,3 +2,5 @@
 .github
 images
 CONTRIBUTORS.svg
+*.apk
+.vscode
