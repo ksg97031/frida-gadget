@@ -93,8 +93,6 @@ def download_signer():
     logger.debug("Downloading the %s file for signing", file)    
     return signer_github.download_signer_jar(assets, signer_path)
 
-    raise FileNotFoundError(f"'{file}' not found in the github releases")
-
 def insert_loadlibary(decompiled_path, main_activity, load_library_name):
     """Inject loadlibary code to main activity
 
