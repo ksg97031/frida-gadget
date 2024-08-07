@@ -10,3 +10,6 @@ test/demo-apk/*
 .coverage
 scripts/files/
 .env
+/.idea
+test_apks
+.vscode
