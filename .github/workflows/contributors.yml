@@ -17,5 +17,5 @@ jobs:
     steps:
       - uses: bubkoo/contributors-list@v1
         with:
-          GITHUB_TOKEN: ${{ secrets.CR_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GHCR_PAT }}
           round: true
