@@ -11,3 +11,5 @@ test/demo-apk/*
 scripts/files/
 .env
 /.idea
+test_apks
+.vscode
