@@ -1,7 +1,6 @@
 """Github module for download frida gadget library"""
 # Base code is sourced from the GitHub repository of Objection.
 # Source: https://github.com/sensepost/objection/blob/master/objection/utils/patchers/github.py
-import lzma
 from pathlib import Path
 import requests
 
