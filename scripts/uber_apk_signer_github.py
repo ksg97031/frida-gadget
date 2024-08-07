@@ -2,6 +2,8 @@
 # Base code is sourced from the GitHub repository of Objection.
 # Source: https://github.com/sensepost/objection/blob/master/objection/utils/patchers/github.py
 from pathlib import Path
+import hashlib
+import os
 import requests
 
 class UberApkSignerGithub:
@@ -68,9 +70,7 @@ class UberApkSignerGithub:
             :param url:
             :param output_file:
             :return:
-        """
-
-        assert output_file.endswith('.jar')
+        """        
         filepath = Path(output_file)
         if filepath.exists() and filepath.stat().st_size > 0:
             return
@@ -81,23 +81,46 @@ class UberApkSignerGithub:
                 if chunk:
                     asset.write(chunk)
 
-    def download_signer_jar(self, url, signer_fullpath: str) -> str:
+    def download_signer_jar(self, assets: list, signer_fullpath: str) -> str:
         """
             Download the signer jar library from Github.
 
+            :param assets:
             :param signer_path:
             :return:
         """
+        assert len(assets) == 2, 'Unable to determine the correct asset to download.'
+        assert signer_fullpath.endswith('.jar'), 'Signer path must end with .jar'
 
-        assert signer_fullpath.endswith('.jar')
+        checksum_download_url = assets[0]['browser_download_url']
+        uber_apk_signer_download_url = assets[1]['browser_download_url']
+        if assets[1]['name'] == 'checksum-sha256.txt':
+            checksum_download_url, uber_apk_signer_download_url = \
+                uber_apk_signer_download_url, checksum_download_url
+        assert uber_apk_signer_download_url.endswith('.jar'), 'Download URL must end with .jar'
+    
         signer_path = Path(signer_fullpath)
         download_directory = signer_path.parent
         if signer_path.exists():
             return signer_fullpath
 
         if not download_directory.exists():
-            download_directory.mkdir(parents=True, exist_ok=True)
+            download_directory.mkdir(parents=True, exist_ok=True)        
 
-        self.download_asset(url, signer_fullpath)
+        check_sum_fullpath = signer_fullpath[:-4] + '.sha256'
+        self.download_asset(checksum_download_url, check_sum_fullpath)
+
+        with open(check_sum_fullpath, 'rb') as checksum_file:
+            checksum = checksum_file.read(64).decode('utf-8')
+        
+        self.download_asset(uber_apk_signer_download_url, signer_fullpath)
+        with open(signer_fullpath, 'rb') as signer_file:
+            signer_data = signer_file.read()
+            signer_hash = hashlib.sha256(signer_data).hexdigest()
+        
+        if checksum != signer_hash:
+            os.remove(signer_fullpath)
+            os.remove(check_sum_fullpath)
+            raise ValueError('The downloaded uber-apk-signer-*.jar file does not match the checksum.')
 
         return signer_fullpath

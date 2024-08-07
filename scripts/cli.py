@@ -86,12 +86,12 @@ def download_signer():
     signer_github = UberApkSignerGithub()
     assets = signer_github.get_assets()
     file = f'uber-apk-signer-{signer_github.signer_version}.jar'
-    for asset in assets:
-        if asset['name'] == file:
-            logger.debug("Downloading the uber-apk-signer(%s) ",
-                         signer_github.signer_version)
-            signer_path = str(FILE_DIR.joinpath(file))
-            return signer_github.download_signer_jar(asset['browser_download_url'], signer_path)
+    signer_path = str(FILE_DIR.joinpath(file))
+    if os.path.exists(signer_path):
+        return signer_path
+
+    logger.debug("Downloading the %s file for signing", file)    
+    return signer_github.download_signer_jar(assets, signer_path)
 
     raise FileNotFoundError(f"'{file}' not found in the github releases")
 
@@ -258,7 +258,7 @@ def sign_apk(apk_path:str):
     with subprocess.Popen(cmd, stdin=pipe, stdout=sys.stdout, stderr=sys.stderr) as process:
         process.communicate(b"\n")
         if process.returncode != 0:
-            logger.error("Signing failed.")
+            logger.error("The APK signing process failed.")
 
             raise subprocess.CalledProcessError(process.returncode, cmd, sys.stdout, sys.stderr)
         return True
@@ -337,7 +337,7 @@ def run(apk_path: str, arch: str, main_activity: str, use_aapt2:bool, no_res:boo
             logger.info("Success")
 
         if sign:
-            logger.debug('Signing the apk')
+            logger.debug('Starting APK signing using uber-apk-signer')
             sign_apk(str(apk_path))
 
 

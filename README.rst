@@ -59,8 +59,9 @@ Usage
         Patch an APK with the Frida gadget library
     
       Options:
-        --arch TEXT           Target architecture of the device. (options: arm64, x86_64, arm, x86)
-        --main-activity TEXT  Specify the main activity
+        --arch TEXT           Target architecture of the device. (options: arm64, x86_64, arm, x86)        
+        --main-activity TEXT  Specify the main activity if you want. (e.g., com.example.MainActivity)
+        --sign                Automatically sign the APK using uber-apk-signer.
         --use-aapt2           Use aapt2 instead of aapt.
         --no-res              Do not decode resources.
         --skip-decompile      Skip decompilation if desired.
@@ -75,7 +76,7 @@ How do I begin?
 
 .. code:: sh
 
-    $ frida-gadget handtrackinggpu.apk --arch arm64
+    $ frida-gadget handtrackinggpu.apk --arch arm64 --sign
       [INFO] Auto-detected frida version: 16.1.3
       [INFO] APK: '[REDACTED]\demo-apk\handtrackinggpu.apk'
       [INFO] Gadget Architecture(--arch): arm64(default)
@@ -92,6 +93,7 @@ How do I begin?
       I: Copying unknown files/dir...
       I: Built apk into: [REDACTED]\demo-apk\handtrackinggpu\dist\handtrackinggpu.apk
       [INFO] Success
+      ...
       
     $ unzip -l [REDACTED]\demo-apk\handtrackinggpu\dist\handtrackinggpu.apk | grep libfrida-gadget
       21133848  09-15-2021 02:28   lib/arm64-v8a/libfrida-gadget-16.1.3-android-arm64.so 
@@ -122,8 +124,9 @@ How to Identify?
 
 Resigning the APK
 ~~~~~~~~~~~~~~~~~~
-| After modifying the APK, you need to re-sign it. 
-| You can quickly re-sign your application with the `uber-apk-signer <https://github.com/patrickfav/uber-apk-signer>`_.
+| After modifying the APK, you need to re-sign it.
+| You can quickly re-sign your application with the `--sign` option.
+| This option uses `uber-apk-signer <https://github.com/patrickfav/uber-apk-signer>`_.
 |
 
 Contributing
