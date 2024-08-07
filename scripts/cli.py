@@ -273,10 +273,10 @@ def print_version(ctx, _, value):
 # pylint: disable=too-many-arguments
 @click.command()
 @click.option('--arch', default="arm64", help="Target architecture of the device.")
-@click.option('--main-activity', default=None, help="Specify the main activity.")
+@click.option('--main-activity', default=None, help="Specify the main activity if desired.")
+@click.option('--sign', is_flag=True, help="Automatically sign the APK using uber-apk-signer.")
 @click.option('--use-aapt2', is_flag=True, help="Use aapt2 instead of aapt.")
 @click.option('--no-res', is_flag=True, help="Do not decode resources.")
-@click.option('--sign', is_flag=True, help="Sign the apk")
 @click.option('--skip-decompile', is_flag=True, help="Skip decompilation if desired.")
 @click.option('--skip-recompile', is_flag=True, help="Skip recompilation if desired.")
 @click.option('--version', is_flag=True, callback=print_version,
