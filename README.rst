@@ -125,7 +125,7 @@ How to Identify?
 Resigning the APK
 ~~~~~~~~~~~~~~~~~~
 | After modifying the APK, you need to re-sign it.
-| You can quickly re-sign your application with the `--sign` option.
+| You can quickly re-sign your application with the ``--sign`` option.
 | This option uses `uber-apk-signer <https://github.com/patrickfav/uber-apk-signer>`_.
 |
 
