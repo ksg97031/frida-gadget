@@ -43,7 +43,7 @@ Docker
 
     APK_DIRECTORY=$PWD
     APK_FILENAME=example.apk
-    docker run -v $APK_DIRECTORY/:/workspace/mount ksg97031/frida-gadget mount/$APK_FILENAME --arch arm64
+    docker run -v $APK_DIRECTORY/:/workspace/mount ksg97031/frida-gadget mount/$APK_FILENAME --arch arm64 --sign
 
     ...
     # New apk is in the $APK_DIRECTORY/example/dist/example.apk
