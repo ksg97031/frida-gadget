@@ -13,3 +13,4 @@ scripts/files/
 /.idea
 test_apks
 .vscode
+docker.sh
