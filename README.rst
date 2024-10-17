@@ -59,13 +59,14 @@ Usage
         Patch an APK with the Frida gadget library
     
       Options:
-        --arch TEXT           Target architecture of the device. (options: arm64, x86_64, arm, x86)        
+        --arch TEXT           Target architecture of the device. (options: arm64, x86_64, arm, x86)
+        --config TEXT         Upload the Frida configuration file.
+        --no-res              Do not decode resources.
         --main-activity TEXT  Specify the main activity if desired. (e.g., com.example.MainActivity)
         --sign                Automatically sign the APK using uber-apk-signer.
-        --use-aapt2           Use aapt2 instead of aapt.
-        --no-res              Do not decode resources.
         --skip-decompile      Skip decompilation if desired.
         --skip-recompile      Skip recompilation if desired.
+        --use-aapt2           Use aapt2 instead of aapt.
         --version             Show version and exit.
         --help                Show this message and exit.
 

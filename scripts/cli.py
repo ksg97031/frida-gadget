@@ -290,7 +290,7 @@ def print_version(ctx, _, value):
 
 # pylint: disable=too-many-arguments
 @click.command()
-@click.option('--arch', default="arm64", help="Target architecture of the device.")
+@click.option('--arch', default="arm64", help="Target architecture of the device. (options: arm64, x86_64, arm, x86)")
 @click.option('--config', help="Upload the Frida configuration file.")
 @click.option('--no-res', is_flag=True, help="Do not decode resources.")
 @click.option('--main-activity', default=None, help="Specify the main activity if desired.")
