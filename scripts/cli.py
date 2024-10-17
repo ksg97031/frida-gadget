@@ -189,7 +189,7 @@ def modify_manifest(decompiled_path):
                             ':extractNativeLibs="true"')
     android_manifest.write_text(txt, encoding="utf-8")
 
-def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str, main_activity:str = None):
+def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str, main_activity:str = None, config:str = None):
     """Inject frida gadget into an APK
 
     Args:
@@ -242,6 +242,24 @@ def inject_gadget_into_apk(apk_path:str, arch:str, decompiled_path:str, main_act
         lib_library_name = 'lib' + gadget_name
     shutil.copy(gadget_path, lib.joinpath(lib_library_name))
 
+
+    # Upload gadget config file
+    upload_files = {'config': config}
+
+    for file_type, file_path in upload_files.items():
+        if file_path:
+            file_path = Path(file_path)
+            if not file_path.exists():
+                logger.error("Frida %s file not found: %s", file_type, file_path)
+                sys.exit(-1)
+            else:
+                target_name = f"lib{load_library_name}.{file_type}.so"
+                if file_path.name == target_name:
+                    logger.info("Uploading Frida %s file: %s", file_type, file_path.name)
+                else:
+                    logger.info("Renaming and uploading Frida %s file: %s -> %s", file_type, file_path.name, target_name)
+                shutil.copy(file_path, lib.joinpath(target_name))
+
 def sign_apk(apk_path:str):
     """Run uber apk signer with option
 
@@ -273,17 +291,18 @@ def print_version(ctx, _, value):
 # pylint: disable=too-many-arguments
 @click.command()
 @click.option('--arch', default="arm64", help="Target architecture of the device.")
+@click.option('--config', help="Upload the Frida configuration file.")
+@click.option('--no-res', is_flag=True, help="Do not decode resources.")
 @click.option('--main-activity', default=None, help="Specify the main activity if desired.")
 @click.option('--sign', is_flag=True, help="Automatically sign the APK using uber-apk-signer.")
-@click.option('--use-aapt2', is_flag=True, help="Use aapt2 instead of aapt.")
-@click.option('--no-res', is_flag=True, help="Do not decode resources.")
 @click.option('--skip-decompile', is_flag=True, help="Skip decompilation if desired.")
 @click.option('--skip-recompile', is_flag=True, help="Skip recompilation if desired.")
+@click.option('--use-aapt2', is_flag=True, help="Use aapt2 instead of aapt.")
 @click.option('--version', is_flag=True, callback=print_version,
               expose_value=False, is_eager=True, help="Show version and exit.")
 @click.argument('apk_path', type=click.Path(exists=True), required=True)
-def run(apk_path: str, arch: str, main_activity: str, use_aapt2:bool, no_res:bool, sign:bool,
-        skip_decompile:bool, skip_recompile:bool):
+def run(apk_path: str, arch: str, config: str, no_res:bool, main_activity: str,
+        sign:bool, skip_decompile:bool, skip_recompile:bool, use_aapt2:bool):
     """Patch an APK with the Frida gadget library"""
     apk_path = Path(apk_path)
 
@@ -315,7 +334,7 @@ def run(apk_path: str, arch: str, main_activity: str, use_aapt2:bool, no_res:boo
             sys.exit(-1)
 
     # Process if decompile is success
-    inject_gadget_into_apk(apk_path, arch, decompiled_path, main_activity)
+    inject_gadget_into_apk(apk_path, arch, decompiled_path, main_activity, config)
 
     # Rebuild with apktool, print apk_path if process is success
     if not skip_recompile:
@@ -337,6 +356,8 @@ def run(apk_path: str, arch: str, main_activity: str, use_aapt2:bool, no_res:boo
         if sign:
             logger.debug('Starting APK signing using uber-apk-signer')
             sign_apk(str(apk_path))
+
+    logger.info(apk_path)
 
 
 if __name__ == '__main__':
